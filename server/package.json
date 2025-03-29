@@ -1,0 +1,28 @@
+{
+  "name": "ayushbackend",
+  "version": "1.0.0",
+  "description": "side hustle",
+  "keywords": [
+    "ayush",
+    "project",
+    "intern"
+  ],
+  "license": "ISC",
+  "author": "Harsh Singh,Himanshu kumar,Puneet superstar",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongodb": "^6.15.0",
+    "mongoose": "^8.13.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "prettier": "^3.5.3"
+  }
+}
