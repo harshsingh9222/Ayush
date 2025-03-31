@@ -7,18 +7,42 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Dependency directories
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
 *.local
 
+# Vite cache
+.vite/
+
+# Static files cache
+*.cache/
+
+# Environment variables
+.env
+.env.*.local
+
 # Editor directories and files
-.vscode/*
+.vscode/
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# System files
+Thumbs.db
+ehthumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Local Google client secret (specific to your project)
+Ayush/client/client_secret_704399162922-db2gplo1a8jntcuvlto5vo4ufln7p6c4.apps.googleusercontent.com.json/
