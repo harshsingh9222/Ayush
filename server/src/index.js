@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import authRouter from './routes/authRouter.js';
+import stepRouter from './routes/StepRegistration.routes.js';
 import connectDB from './DB/connectDB.js';
 
 dotenv.config({
@@ -12,14 +13,20 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', 
+  credentials: true, 
+}));
+
 app.use(express.json());
 
 // Routes
 app.get('/', (req, res) => {
     res.send('Hello, World!');
 });
+
 app.use('/auth', authRouter);
+app.use('/step', stepRouter);
 
 // Connect to DB and start the server
 connectDB()

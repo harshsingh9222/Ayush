@@ -3,6 +3,7 @@ import oauth2Client from "../utils/googleConfig.js";
 import axios from 'axios'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt';
+import OTP from "../models/OTP.model.js";
 
 //for google login
 export const googleLogin = async (req, res) => {
@@ -136,7 +137,17 @@ export const localLogin = async (req, res) => {
       console.error('Login error:', error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
-  };
+ };
+
+
+export const getCurrentUser = async (req, res) => {
+    return res
+    .status(200)
+    .json({
+        message: "Current user fetched successfully",
+        user: req.user
+    });
+ };
   
 
-export default { googleLogin, registerUser, localLogin };
+export default { googleLogin, registerUser, localLogin, getCurrentUser };
