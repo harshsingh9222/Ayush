@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import GoogleLogin from './GoogleLogin'; // Adjust the import path as needed
+import GoogleLogin from './GoogleLogin';
+import axiosInstance from '../utils/axios.helper.js'; 
+import {login as authLogin } from '../store/authSlice.js'
+import { useDispatch } from 'react-redux';
 
 const LocalLogin = () => {
   const [loginData, setLoginData] = useState({
@@ -9,15 +12,23 @@ const LocalLogin = () => {
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('http://localhost:3000/auth/login', loginData);
+      const response = await axiosInstance.post('/auth/login', loginData);
       console.log('Login successful:', response.data);
       // Handle successful login (e.g., store token, redirect, etc.)
+    
+      const accessToken = `Bearer ${response.data.token}`;
+      localStorage.setItem('access_token', accessToken);
+      axiosInstance.defaults.headers.common['Authorization'] = accessToken;
+      
+      dispatch(authLogin(response.data.user)); 
+     
     } catch (err) {
       console.error('Login error:', err.response?.data || err.message);
       setError(err.response?.data?.message || 'Login failed');
