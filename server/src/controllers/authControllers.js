@@ -3,6 +3,7 @@ import oauth2Client from "../utils/googleConfig.js";
 import axios from 'axios'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt';
+import OTP from "../models/OTP.model.js";
 
 //for google login
 export const googleLogin = async (req, res) => {

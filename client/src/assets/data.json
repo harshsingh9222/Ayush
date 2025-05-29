@@ -1,0 +1,54 @@
+[
+    {
+      "companyName": "AyurHealers Pvt Ltd",
+      "location": "Kerala, India",
+      "categories": ["Ayurveda", "Homeopathy"]
+    },
+    {
+      "companyName": "NaturaCure Enterprises",
+      "location": "Pune, Maharashtra, India",
+      "categories": ["Yoga & Naturopathy", "Ayurveda"]
+    },
+    {
+      "companyName": "Siddha Life Sciences",
+      "location": "Chennai, Tamil Nadu, India",
+      "categories": ["Siddha"]
+    },
+    {
+      "companyName": "Unani Wellness Hub",
+      "location": "Hyderabad, Telangana, India",
+      "categories": ["Unani", "Ayurveda"]
+    },
+    {
+      "companyName": "Sowa Rigpa Remedies",
+      "location": "Leh, Ladakh, India",
+      "categories": ["Sowa Rigpa"]
+    },
+    {
+      "companyName": "Divya Health Solutions",
+      "location": "Haridwar, Uttarakhand, India",
+      "categories": ["Ayurveda", "Yoga & Naturopathy"]
+    },
+    {
+      "companyName": "Herbal Root Medics",
+      "location": "Ahmedabad, Gujarat, India",
+      "categories": ["Homeopathy", "Ayurveda"]
+    },
+    {
+      "companyName": "YogVeda Healthcare",
+      "location": "Rishikesh, Uttarakhand, India",
+      "categories": ["Yoga & Naturopathy", "Ayurveda"]
+    },
+    {
+      "companyName": "SiddhaVaidya Labs",
+      "location": "Madurai, Tamil Nadu, India",
+      "categories": ["Siddha", "Homeopathy"]
+    },
+    {
+      "companyName": "Unani Herbals Co.",
+      "location": "Lucknow, Uttar Pradesh, India",
+      "categories": ["Unani"]
+    }
+]
+
+  
