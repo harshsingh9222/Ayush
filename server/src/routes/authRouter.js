@@ -1,5 +1,9 @@
 import express from 'express';
-import { googleLogin,registerUser,localLogin } from '../controllers/authControllers.js';
+import { googleLogin,registerUser,localLogin, getCurrentUser } from '../controllers/authControllers.js';
+import {stepRegistration} from '../controllers/StepRegistration.controller.js';
+import { upload } from '../Middlewares/multer.middleware.js';
+import { verifyJWT } from '../Middlewares/auth.middleware.js';
+import { sendotp, verifyotp } from '../controllers/otp.controller.js';
 
 const router = express.Router();
 
@@ -17,4 +21,7 @@ router.post('/register', registerUser);
 // Local login route
 router.post('/login', localLogin);
 
+router.post('/send-otp', verifyJWT, sendotp)
+router.post('/verify-otp', verifyJWT, verifyotp)
+router.get('/current-user', verifyJWT, getCurrentUser);
 export default router;
