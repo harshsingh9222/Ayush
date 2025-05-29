@@ -1,25 +1,13 @@
-import express from 'express';
 import dotenv from 'dotenv';
-import cors from 'cors';
-import authRouter from './routes/authRouter.js';
 import connectDB from './DB/connectDB.js';
+import {app} from './app.js'
 
 dotenv.config({
-    path: './env' // Ensure this path is correct, often it's '.env'
+    path: '.env' // Ensure this path is correct, often it's '.env'
 });
 
-const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Routes
-app.get('/', (req, res) => {
-    res.send('Hello, World!');
-});
-app.use('/auth', authRouter);
 
 // Connect to DB and start the server
 connectDB()

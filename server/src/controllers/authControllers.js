@@ -55,7 +55,6 @@ export const googleLogin = async (req, res) => {
 };
 
 //for local registeration
-
 export const registerUser = async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -138,5 +137,4 @@ export const localLogin = async (req, res) => {
     }
   };
   
-
 export default { googleLogin, registerUser, localLogin };
