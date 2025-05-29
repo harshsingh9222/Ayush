@@ -9,6 +9,11 @@ const Header = () => {
         <div className="text-2xl font-bold">AYUSH Startups</div>
         <ul className="flex space-x-6">
           <li>
+            <Link to="/work" className="hover:underline">
+              Works
+            </Link>
+          </li>
+          <li>
             <Link to="/home" className="hover:underline">
               Home
             </Link>

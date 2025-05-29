@@ -7,7 +7,7 @@ import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import LoginPage from './pages/LoginPage';
 import PageNotFound from './pages/PageNotFound';
-
+import WorkPage from './pages/WorkPage';
 function App() {
   return (
     <div className="min-h-screen">
@@ -21,6 +21,7 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/*" element={<PageNotFound />} />
+          <Route path="/work" element={<WorkPage/>} />
         </Routes>
       </main>
     </div>
