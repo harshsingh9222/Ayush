@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import GoogleLogin from './GoogleLogin';
-import axiosInstance from '../utils/axios.helper.js'; 
-import {login as authLogin } from '../store/authSlice.js'
+import GoogleLogin from './GoogleLogin.jsx';
+import axiosInstance from '../../utils/axios.helper.js'; 
+import {login as authLogin } from '../../store/authSlice.js'
 import { useDispatch } from 'react-redux';
 
 const LocalLogin = () => {

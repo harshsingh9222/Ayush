@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
-import { googleAuth } from '../Api/googleCode';
+import { googleAuth } from '../../Api/googleCode';
 
 const GoogleLogin = () => {
   const onSuccess = async (authResult) => {

@@ -137,5 +137,15 @@ export const localLogin = async (req, res) => {
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
+
+
+export const getCurrentUser = async (req, res) => {
+    return res
+    .status(200)
+    .json({
+        message: "Current user fetched successfully",
+        user: req.user
+    });
+ };
   
-export default { googleLogin, registerUser, localLogin };
+export default { googleLogin, registerUser, localLogin , getCurrentUser };
