@@ -15,6 +15,7 @@ import { addRepresentative } from './store/representativeSlice';
 import axiosInstance from './utils/axios.helper';
 import { fetchCurrentRepresentative } from './hooks/getCurrentRepresentative';
 import { fetchBusiness } from './hooks/getBusiness';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   const dispatch = useDispatch();
@@ -59,6 +60,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/*" element={<PageNotFound />} />
           <Route path="/work" element={<WorkPage/>} />
+          <Route path="/profile" element={<ProfilePage/>} />
         </Routes>
       </main>
     </div>
