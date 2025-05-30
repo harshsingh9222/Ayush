@@ -7,9 +7,7 @@ import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import LoginPage from './pages/LoginPage';
 import PageNotFound from './pages/PageNotFound';
-<<<<<<< HEAD
 import WorkPage from './pages/WorkPage';
-=======
 import Home from './components/Step-Resistration/Home';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCurrentUser } from './hooks/getCurrentUser';
@@ -18,7 +16,6 @@ import axiosInstance from './utils/axios.helper';
 import { fetchCurrentRepresentative } from './hooks/getCurrentRepresentative';
 import { fetchBusiness } from './hooks/getBusiness';
 
->>>>>>> 0db4efebe2c6c4fc43eecfa59d4fa0d2924547c6
 function App() {
   const dispatch = useDispatch();
   const authStatus = useSelector((state) => state.auth.status);
