@@ -19,7 +19,5 @@ app.use(express.urlencoded({
 }))
 app.use(express.static('public'))
 
-// Routes
-app.use('/auth', authRouter);
 
 export {app}

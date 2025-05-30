@@ -10,7 +10,7 @@ dotenv.config({
     path: '.env' // Ensure this path is correct, often it's '.env'
 });
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 
 
 // Routes
