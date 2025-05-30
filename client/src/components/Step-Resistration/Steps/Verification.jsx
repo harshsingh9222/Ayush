@@ -54,11 +54,13 @@ const Verification = forwardRef(({ onSubmit }, ref) => {
       
       // Reset verification status when data changes
       setVerificationStatus({
-        representativeMobile: { verified: representativeData?.mobileNo, loading: false, error: null },
+        representativeMobile: { verified: representativeData?.mobileNo ? true : false, loading: false, error: null },
         representativeEmail: { verified: representativeData?.email, loading: false, error: null },
         businessMobile: { verified: businessData?.mobileNo, loading: false, error: null },
         businessEmail: { verified: businessData?.email, loading: false, error: null },
       });
+
+      console.log(businessData?.registrationNumber, businessData?.mobileNo, businessData?.email, representativeData?.mobileNo, representativeData?.email);
     }
   }, [representativeStatus, representativeData, businessData, reset]);
 
@@ -102,6 +104,9 @@ const Verification = forwardRef(({ onSubmit }, ref) => {
   };
 
   const renderOtpInputs = (fieldKey) => {
+    if(verificationStatus[fieldKey].verified) {
+      return null; // Don't show OTP inputs if already verified
+    }
     return (
       <div className="mt-3">
         <div className="flex space-x-2 justify-center">
@@ -113,7 +118,7 @@ const Verification = forwardRef(({ onSubmit }, ref) => {
               maxLength={1}
               value={digit}
               onChange={(e) => handleOtpChange(e, index, fieldKey)}
-              className="w-10 h-10 text-center text-lg rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="w-10 h-10 text-center text-md rounded-xl border border-gray-500 focus:outline-none focus:ring-0 focus:ring-gray-500"
             />
           ))}
         </div>
@@ -284,8 +289,8 @@ const Verification = forwardRef(({ onSubmit }, ref) => {
           type="button"
           onClick={() => handleVerifyOtp(fieldKey)}
           disabled={status.loading}
-          className={`px-3 py-2 ${
-            status.loading ? 'bg-gray-400' : 'bg-teal-600 hover:bg-teal-700'
+          className={`px-3 py-2 cursor-pointer ${
+            status.loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-teal-600 hover:bg-teal-700'
           } text-white rounded-md`}
         >
           {status.loading ? 'Verifying...' : 'Verify OTP'}
@@ -298,8 +303,8 @@ const Verification = forwardRef(({ onSubmit }, ref) => {
         type="button"
         onClick={() => handleSendOtp(fieldKey)}
         disabled={status.loading}
-        className={`px-3 py-2 ${
-          status.loading ? 'bg-gray-400' : 'bg-teal-600 hover:bg-teal-700'
+        className={`px-3 py-2 cursor-pointer ${
+          status.loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-teal-600 hover:bg-teal-700'
         } text-white rounded-md`}
       >
         {status.loading ? 'Sending...' : 'Send OTP'}
@@ -350,7 +355,7 @@ const Verification = forwardRef(({ onSubmit }, ref) => {
             })}
             placeholder="9876543210"
             className={`flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 ${verificationStatus.representativeMobile.verified ? 'text-gray-600 cursor-not-allowed' : ''}`}
-            disabled = {true}
+            disabled = {verificationStatus.representativeMobile.verified ? true : false}
           />
           {renderVerificationButton('representativeMobile')}
         </div>
@@ -385,7 +390,7 @@ const Verification = forwardRef(({ onSubmit }, ref) => {
             })}
             placeholder="example@mail.com"
             className={`flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 ${verificationStatus.representativeEmail.verified ? 'text-gray-600 cursor-not-allowed' : ''}`}
-            disabled = {true}
+            disabled = {verificationStatus.representativeEmail.verified ? true : false}
           />
           {renderVerificationButton('representativeEmail')}
         </div>
@@ -420,7 +425,7 @@ const Verification = forwardRef(({ onSubmit }, ref) => {
             })}
             placeholder="9876543210"
             className={`flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 ${verificationStatus.businessMobile.verified ? 'text-gray-600 cursor-not-allowed' : ''}`}
-            disabled = {true}
+            disabled = {verificationStatus.businessMobile.verified ? true : false}
           />
           
           {renderVerificationButton('businessMobile')}
@@ -459,7 +464,7 @@ const Verification = forwardRef(({ onSubmit }, ref) => {
             })}
             placeholder="example@mail.com"
             className={`flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 ${verificationStatus.businessEmail.verified ? 'text-gray-600 cursor-not-allowed' : ''}`}  
-            disabled = {true}
+            disabled = {verificationStatus.businessEmail.verified ? true : false} 
           />
           {renderVerificationButton('businessEmail')}
         </div>
