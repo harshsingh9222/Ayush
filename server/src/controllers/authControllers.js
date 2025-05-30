@@ -56,7 +56,6 @@ export const googleLogin = async (req, res) => {
 };
 
 //for local registeration
-
 export const registerUser = async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -137,7 +136,7 @@ export const localLogin = async (req, res) => {
       console.error('Login error:', error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
- };
+  };
 
 
 export const getCurrentUser = async (req, res) => {
@@ -149,5 +148,4 @@ export const getCurrentUser = async (req, res) => {
     });
  };
   
-
-export default { googleLogin, registerUser, localLogin, getCurrentUser };
+export default { googleLogin, registerUser, localLogin , getCurrentUser };

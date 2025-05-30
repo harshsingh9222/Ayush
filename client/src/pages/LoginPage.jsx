@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import LocalLogin from '../components/LocalLogin';
-import Register from '../components/Register';
-import AdminLoginForm from '../components/AdminLoginForm';
+import LocalLogin from '../components/user_login_reg/LocalLogin';
+import Register from '../components/user_login_reg/Register';
+import AdminLoginForm from '../components/admin_component/AdminLoginForm';
 
 const LoginPage = () => {
   const [formType, setFormType] = useState('user'); // 'user', 'admin', 'register'

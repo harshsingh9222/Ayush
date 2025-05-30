@@ -2,97 +2,102 @@ import Representative from '../models/Representative.model.js';
 import Business from '../models/Business.model.js';
 import OTP from '../models/OTP.model.js';
 
-export const stepRegistration = async (req, res) => {
-  const step = parseInt(req.params.step);
-  const formData = req.body;
-  const files = req.files;
+const getFileByFieldName = (files = [], fieldName) => {
+    const fileObj = files.find(f => f.fieldname === fieldName);
+    return fileObj ? fileObj.filename : null;
+};
 
-  console.log('Text fields:', formData);
-  console.log('Files:', files);
-  console.log('Current step:', step);
+export const stepRegistration = async (req, res) => {
+    const step = parseInt(req.params.step);
+    const formData = req.body;
+    const files = req.files;
+
+    console.log('Text fields:', formData);
+    console.log('Files:', files);
+    console.log('Current step:', step);
 
     if (step === 0) {
         try {
-        const {
-            firstName,
-            lastName,
-            dob,
-            position,
-            aadharNumber,
-            panNumber,
-            addressLine1,
-            addressLine2,
-            villageTown,
-            tehsil,
-            post,
-            postalCode,
-            state,
-            district,
-            addressProofName
-        } = formData;
+            const {
+                firstName,
+                lastName,
+                dob,
+                position,
+                aadharNumber,
+                panNumber,
+                addressLine1,
+                addressLine2,
+                villageTown,
+                tehsil,
+                post,
+                postalCode,
+                state,
+                district,
+                addressProofName
+            } = formData;
 
 
-        // Format validation
-        if (!/^\d{12}$/.test(aadharNumber)) {
-            return res.status(400).json({ error: 'Aadhar must be 12 digits' });
-        }
+            // Format validation
+            if (!/^\d{12}$/.test(aadharNumber)) {
+                return res.status(400).json({ error: 'Aadhar must be 12 digits' });
+            }
 
-        if (!/^[A-Z]{5}\d{4}[A-Z]{1}$/.test(panNumber)) {
-            return res.status(400).json({ error: 'Invalid PAN format' });
-        }
+            if (!/^[A-Z]{5}\d{4}[A-Z]{1}$/.test(panNumber)) {
+                return res.status(400).json({ error: 'Invalid PAN format' });
+            }
 
-        // Check for existing representative
-        const existingRep = await Representative.findOne({
-            $or: [
-                { aadharNo: aadharNumber },
-                { panNo: panNumber }
-            ]
-        });
-
-        if (existingRep) {
-            const conflicts = [];
-            if (existingRep.aadharNo === aadharNumber) conflicts.push('Aadhar number');
-            if (existingRep.panNo === panNumber) conflicts.push('PAN number');
-
-            return res.status(409).json({
-                success: false,
-                message: `${conflicts.join(' and ')} already registered`,
-                existingId: existingRep._id
+            // Check for existing representative
+            const existingRep = await Representative.findOne({
+                $or: [
+                    { aadharNo: aadharNumber },
+                    { panNo: panNumber }
+                ]
             });
-        }
 
-        const representative = new Representative({
-            name: `${firstName} ${lastName}`,
-            dob,
-            position,
-            aadharNo: aadharNumber,
-            panNo: panNumber,
-            addressLine1,
-            addressLine2,
-            village: villageTown,
-            tehsil,
-            post,
-            postalCode,
-            state,
-            district,
-            addressProofName,
-            userId: req.user._id, 
-            stepsCompleted: 1
-        });
+            if (existingRep) {
+                const conflicts = [];
+                if (existingRep.aadharNo === aadharNumber) conflicts.push('Aadhar number');
+                if (existingRep.panNo === panNumber) conflicts.push('PAN number');
 
-        await representative.save();
+                return res.status(409).json({
+                    success: false,
+                    message: `${conflicts.join(' and ')} already registered`,
+                    existingId: existingRep._id
+                });
+            }
 
-        res.status(201).json({
-            success: true,
-            message: 'Step 0 completed and representative saved.',
-            representative: representative
-        });
+            const representative = new Representative({
+                name: `${firstName} ${lastName}`,
+                dob,
+                position,
+                aadharNo: aadharNumber,
+                panNo: panNumber,
+                addressLine1,
+                addressLine2,
+                village: villageTown,
+                tehsil,
+                post,
+                postalCode,
+                state,
+                district,
+                addressProofName,
+                userId: req.user._id,
+                stepsCompleted: 1
+            });
+
+            await representative.save();
+
+            res.status(201).json({
+                success: true,
+                message: 'Step 0 completed and representative saved.',
+                representative: representative
+            });
         } catch (err) {
             console.error('Error saving representative at step 0:', err);
             res.status(500).json({ success: false, message: 'Internal server error' });
         }
     }
-    else if(step === 1){
+    else if (step === 1) {
         try {
             const userId = req.user._id;
             const representative = await Representative.findOne({ userId });
@@ -101,61 +106,54 @@ export const stepRegistration = async (req, res) => {
             console.log('Representative:', representative);
 
             if (!representative) {
-                return res
-                    .status(404)
-                    .json({ success: false, 
-                            message: 'Representative not found' 
-                        });
+                return res.status(500).json({
+                    success: false,
+                    message: 'Representative not found',
+                });
             }
 
-            // Process file uploads
-            const fileFields = {
-                addressProofFile: formData?.addressProofFile,
-                aadharFile: formData?.aadharFile,
-                panFile: formData?.panFile,
-            };
+            const addressProofFile = getFileByFieldName(files, 'addressProofFile')
+                || formData.addressProofFile;
+            const aadharFile = getFileByFieldName(files, 'aadharFile')
+                || formData.aadharFile;
+            const panFile = getFileByFieldName(files, 'panFile')
+                || formData.panFile;
 
-            // Check if files are provided and assign them
-            for(var i = 0; i < files.length; i++) {
-                fileFields[files[i].fieldname] = files[i].filename;
-            }
+            console.log('Files received:', { addressProofFile, aadharFile, panFile });
 
-            console.log('File fields:', fileFields);
+            representative.addressProofPic = addressProofFile;
+            representative.aadharPic = aadharFile;
+            representative.panPic = panFile;
 
-    
-            representative.addressProofPic = fileFields.addressProofFile;
-            representative.aadharPic = fileFields.aadharFile;
-            representative.panPic = fileFields.panFile;
+            // Update optional text fields if provided
+            if (formData.aadharNo) representative.aadharNo = formData.aadharNo;
 
-            representative.stepsCompleted = Math.max(representative.stepsCompleted, 2); // Update step count
+            // Advance step
+            representative.stepsCompleted = Math.max(representative.stepsCompleted, 2);
             await representative.save();
 
-            console.log('Business updated at step 3:', representative);
+            return res.status(200).json({
+                success: true,
+                message: 'Step 1 handled',
+                representative
+            });
 
-            return res
-                    .status(200)
-                    .json({ success: true, 
-                            message: 'Step 3 handled',
-                            representative: representative 
-                        });
-
-        } 
-        catch (error) {
-            console.log('Error in step 3:', error);
-            return res
-                    .status(500)
-                    .json({ success: false, 
-                            message: 'Server error in step 3', 
-                            error: error.message 
-                        });
+        } catch (error) {
+            console.log('Error in step 1:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Server error in step 1',
+                error: error.message,
+            });
         }
     }
+
     else if (step === 2) {
         // Handle step 2 logic here
 
         try {
             const currentStep = parseInt(req.params.step);
-            const userId = req.user._id; 
+            const userId = req.user._id;
 
             const {
                 businessName,
@@ -178,7 +176,7 @@ export const stepRegistration = async (req, res) => {
             } = req.body;
 
             // Check if business already exists
-            const existingbusiness = await Business.findOne({ 
+            const existingbusiness = await Business.findOne({
                 $or: [
                     { registrationNumber },
                     { bankAccountNumber }
@@ -206,7 +204,7 @@ export const stepRegistration = async (req, res) => {
 
             const representative = await Representative.findOne({ userId })
             if (!representative) {
-                return res.status(404).json({
+                return res.status(500).json({
                     success: false,
                     message: 'Representative not found'
                 });
@@ -246,7 +244,7 @@ export const stepRegistration = async (req, res) => {
                 business: newbusiness,
                 representative: representative
             });
-        } 
+        }
         catch (error) {
             console.error('Registration error:', error);
             return res.status(500).json({
@@ -255,88 +253,75 @@ export const stepRegistration = async (req, res) => {
                 error: error.message
             });
         }
-    } 
+    }
     else if (step === 3) {
-
         try {
-            const CRNNumber = formData.registrationNumber;
-        
+            const { registrationNumber } = formData;
+            console.log('registrationNumber :>> ', registrationNumber);
+            
             const userId = req.user._id;
-            const representative = await Representative.findOne({ userId });
 
-            console.log('User ID:', userId);
-            console.log('Representative:', representative);
-
+            const representative = await Representative.findOne({ userId: req.user._id });
+            console.log('representative :>> ', representative);
             if (!representative) {
-                return res
-                    .status(404)
-                    .json({ success: false, 
-                            message: 'Representative not found' 
-                        });
+                return res.status(404).json({
+                    success: false,
+                    message: 'Representative not found'
+                });
             }
 
-            const business = await Business.findOne({ representative: representative._id , registrationNumber: CRNNumber });
+            const business = await Business.findOne({
+                representative: representative._id,
+                registrationNumber
+            });
+            console.log('business :>> ', business);
             if (!business) {
-                return res
-                    .status(404)
-                    .json({ success: false, 
-                            message: 'business not found for this representative' 
-                        });
+                return res.status(500).json({
+                    success: false,
+                    message: 'Business not found for this representative'
+                });
             }
 
-            // Process file uploads
-            const fileFields = {
-                businessProofFile: formData?.businessProofFile,
-                ownershipProofFile: formData?.ownershipProofFile,
-                moaFile: formData?.moaFile,
-                aoaFile: formData?.aoaFile,
-                bankStatementFile: formData?.bankStatementFile,
-                bankPassbookFile: formData?.bankPassbookFile,
-                partnershipDeedFile: formData?.partnershipDeedFile,
-                businessContinuityProofFile: formData?.businessContinuityProofFile
+            // Map your expected fieldnames → model keys
+            const expectedFields = {
+                businessProof: 'businessProofFile',
+                ownershipProof: 'ownershipProofFile',
+                moa: 'moaFile',
+                aoa: 'aoaFile',
+                bankStatement: 'bankStatementFile',
+                bankPassbook: 'bankPassbookFile',
+                partnershipDeed: 'partnershipDeedFile',
+                businessContinuityProof: 'businessContinuityProofFile'
             };
 
-            // Check if files are provided and assign them
-            for(var i = 0; i < files.length; i++) {
-                fileFields[files[i].fieldname] = files[i].filename;
+            // Loop & replace or retain existing
+            for (const [modelField, formField] of Object.entries(expectedFields)) {
+                const uploadedFilename = getFileByFieldName(files, formField);
+                business[modelField] = uploadedFilename
+                    ? uploadedFilename
+                    : formData[formField] || business[modelField];
             }
 
-            console.log('File fields:', fileFields);
-
-            business.businessProof = fileFields.businessProofFile;
-            business.ownershipProof = fileFields.ownershipProofFile;
-            business.moa = fileFields.moaFile;
-            business.aoa = fileFields.aoaFile;
-            business.bankStatement = fileFields.bankStatementFile;
-            business.bankPassbook = fileFields.bankPassbookFile;
-            business.partnershipDeed = fileFields.partnershipDeedFile;
-            business.businessContinuityProof = fileFields.businessContinuityProofFile;
-
-            representative.stepsCompleted = Math.max(representative.stepsCompleted, 4); // Update step count
+            representative.stepsCompleted = Math.max(representative.stepsCompleted, 4);
             await representative.save();
             await business.save();
 
-            console.log('Business updated at step 3:', business);
-
-            return res
-                    .status(200)
-                    .json({ success: true, 
-                            message: 'Step 3 handled',
-                            business: business,
-                            representative: representative
-                        });
-
-        } 
-        catch (error) {
-            console.log('Error in step 3:', error);
-            return res
-                    .status(500)
-                    .json({ success: false, 
-                            message: 'Server error in step 3', 
-                            error: error.message 
-                        });
+            return res.status(200).json({
+                success: true,
+                message: 'Step 3 handled successfully',
+                business,
+                representative
+            });
+        } catch (error) {
+            console.error('Error in step 3:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Server error in step 3',
+                error: error.message,
+            });
         }
     }
+
     else if (step === 4) {
         try {
             const userId = req.user._id;
@@ -347,9 +332,10 @@ export const stepRegistration = async (req, res) => {
             if (!representative) {
                 return res
                     .status(404)
-                    .json({ success: false, 
-                            message: 'Representative not found' 
-                        });
+                    .json({
+                        success: false,
+                        message: 'Representative not found'
+                    });
             }
 
             representative.stepsCompleted = Math.max(representative.stepsCompleted, 5); // Update step count
@@ -357,36 +343,39 @@ export const stepRegistration = async (req, res) => {
 
             const business = await Business.findOne({ registrationNumber: CRNNumber });
             return res
-                    .status(200)
-                    .json({ success: true, 
-                            message: 'Step 4 handled',
-                            representative: representative,
-                            business: business,
-                            representative: representative 
-                        });
-        } 
+                .status(200)
+                .json({
+                    success: true,
+                    message: 'Step 4 handled',
+                    representative: representative,
+                    business: business,
+                    representative: representative
+                });
+        }
         catch (error) {
             console.log('Error in step 4:', error);
             return res
-                    .status(500)
-                    .json({ success: false, 
-                            message: 'Server error in step 4', 
-                            error: error.message 
-                        });
+                .status(500)
+                .json({
+                    success: false,
+                    message: 'Server error in step 4',
+                    error: error.message
+                });
         }
 
 
     }
     else {
         return res
-                .status(200)
-                .json({ success: true, 
-                        message: 'Step 4 handled' 
-                    });
+            .status(200)
+            .json({
+                success: true,
+                message: 'Step 4 handled'
+            });
     }
 };
 
-export const getCurrentRepresentative = async(req, res) => {
+export const getCurrentRepresentative = async (req, res) => {
     const userId = req.user._id;
 
     const representative = await Representative.findOne({ userId });
@@ -433,13 +422,15 @@ export const getBusinessByRepresentative = async (req, res) => {
                 .json({ success: true, message: 'Current Representative is not yet representer of any company.', representative });
         }
 
-        return res.status(200).json({ success: true, business });    
+        return res.status(200).json({ success: true, business });
     } catch (error) {
         console.error('Error fetching business by representative:', error);
-        return res.status(500).json({ success: false, message: 'Internal server error', error: error.message });        
+        return res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
     }
 }
 export default {
-    stepRegistration, 
-    getCurrentRepresentative
+    stepRegistration,
+    getCurrentRepresentative,
+    getBusinessByRepresentative
 };
+
