@@ -81,7 +81,7 @@ const Home = () => {
             setCurrStep(Math.min(steps.length, currStep + 1));
         } 
         else {
-            setCurrStep(Math.max(0, currStep - 1));
+            setCurrStep(Math.max(0, currStep - 1)); // this is the case of the previous button
         }
     };
 

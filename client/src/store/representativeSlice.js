@@ -4,7 +4,7 @@ const initialState = {
     status: false,
     representativeData: null
 }
-const represetativeSlice = createSlice({ 
+const represetativeSlice = createSlice({  
     name: 'representative',
     initialState,
     reducers:{

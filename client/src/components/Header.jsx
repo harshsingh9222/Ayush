@@ -43,6 +43,11 @@ const Header = () => {
               Profile
             </Link>
           </li>
+          <li>
+            <Link to="/dashboard" className="hover:underline">
+              Dashboard
+            </Link>
+          </li>
         </ul>
       </nav>
       {/* <div id="logoImg" className="text-left mt-2">
