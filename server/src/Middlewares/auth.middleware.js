@@ -1,9 +1,11 @@
-import jwt from 'jsonwebtoken';
+import jwt,{decode} from 'jsonwebtoken';
 import User from "../models/user.models.js";
 import { ApiError } from '../utils/ApiError.js';
+import { ApiResponse } from '../utils/ApiResponse.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
-export const verifyJWT = async (req, res, next) => {
-    const token = req.cookies?.access_token || req.header("Authorization")?.replace("Bearer ", "");
+export const verifyJWT = asyncHandler(async (req, res, next) => {
+    const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
         console.log("No token found");
@@ -14,16 +16,13 @@ export const verifyJWT = async (req, res, next) => {
     }
 
     try {
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
-        const user = await User.findById(decodedToken._id).select("-password");
+        const user = await User.findById(decodedToken._id).select("-password -refreshToken");
         console.log("User in auth middleware:", user);
 
         if (!user) {
-            return res.status(403).json({
-                success: false,
-                message: "User not found or invalid token"
-            });
+            throw new ApiError(401, " User not found or Invalid Access Token");
         }
 
         req.user = user;
@@ -40,7 +39,7 @@ export const verifyJWT = async (req, res, next) => {
 
         return res.status(402).json({
             success: false,
-            message: "Invalid authentication token"
+            message: "Invalid Access token"
         });
     }
-};
+});

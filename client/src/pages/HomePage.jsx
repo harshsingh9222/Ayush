@@ -1,7 +1,20 @@
 import React from 'react';
 import { ayush2, pmModi, ayurveda, yoga, unani, siddha, naturepathy, homopathy } from '../assets/images';
-
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 const HomePage = () => {
+  const navigate=useNavigate()
+  const authStatus =useSelector((state)=>state.auth.status);
+
+  const handleGetStarted= () => {
+    if(authStatus){
+      navigate('/step')
+    }
+    else{
+      navigate('/login')
+    }
+  }
+  
   return (
     <div>
       {/* Image Section */}
@@ -27,12 +40,10 @@ const HomePage = () => {
         <p className="text-lg text-gray-600 mt-4">
           Streamlining the registration process for startups in the AYUSH sector.
         </p>
-        <a
-          href="#"
-          className="btn inline-block mt-6 bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
-        >
+        <button onClick={handleGetStarted}
+          className="btn inline-block mt-6 bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition duration-200">
           Get Started
-        </a>
+        </button>
       </section>
 
       {/* About-Box Section */}

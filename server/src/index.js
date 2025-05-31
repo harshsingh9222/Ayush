@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import cors from 'cors';
-import authRouter from './routes/authRouter.js';
+import userRouter from './routes/user.routes.js';
 import stepRouter from './routes/StepRegistration.routes.js';
 import connectDB from './DB/connectDB.js';
 import {app} from './app.js'
@@ -18,7 +18,7 @@ app.get('/', (req, res) => {
     res.send('Hello, World!');
 });
 
-app.use('/auth', authRouter);
+app.use('/auth', userRouter);
 app.use('/step', stepRouter);
 
 // Connect to DB and start the server

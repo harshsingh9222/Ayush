@@ -25,12 +25,17 @@ function App() {
   const representativeData = useSelector((state) => state.representative.representativeData);
 
   useEffect(() => {
-    getCurrentUser(dispatch)
-    fetchCurrentRepresentative(dispatch)
-    fetchBusiness(dispatch)
-     .finally(() => setLoading(false));
+    if(authStatus){
+      getCurrentUser(dispatch)
+      fetchCurrentRepresentative(dispatch)
+      fetchBusiness(dispatch)
+       .finally(() => setLoading(false));
+    }
+    else{
+      setLoading(false)
+    }
 
-  }, [dispatch]);
+  }, [authStatus,dispatch]);
 
 
 

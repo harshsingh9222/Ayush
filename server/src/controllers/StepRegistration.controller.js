@@ -62,7 +62,8 @@ export const stepRegistration = async (req, res) => {
                 return res.status(409).json({
                     success: false,
                     message: `${conflicts.join(' and ')} already registered`,
-                    existingId: existingRep._id
+                    existingId: existingRep._id,
+                    conflicts
                 });
             }
 
@@ -414,6 +415,8 @@ export const getBusinessByRepresentative = async (req, res) => {
         // in future agr ek representative ke pass multiple business ho to usko bhi handle karna padega
         // for now we are just getting one business of that representative
         // to jb more than one business rhenge to hme ....... dekhte hai ky krenge ... khuch idea ho to btao.
+
+        //Nhi ho skta rep is someone appointed by company itself i.e why he is called representative of company
 
 
         if (!business) {

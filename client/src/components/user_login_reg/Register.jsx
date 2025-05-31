@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import GoogleLogin from './GoogleLogin'; // Adjust the import path as needed
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import GoogleLogin from './GoogleLogin';
+import axiosInstance from '../../utils/axios.helper';
+import { login as authLogin } from '../../store/authSlice';
 
 const Register = () => {
   const [registerData, setRegisterData] = useState({
@@ -10,15 +13,28 @@ const Register = () => {
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('http://localhost:3000/auth/register', registerData);
+      const response = await axiosInstance.post('/auth/register', registerData);
       console.log('Registration successful:', response.data);
-      // Handle successful registration (e.g., store token, redirect, etc.)
+
+      // Automatically log in the user
+      dispatch(authLogin(response.data.user));
+
+      // Optional: set access token in localStorage or axios headers
+      // const accessToken = `Bearer ${response.data.token}`;
+      // localStorage.setItem('access_token', accessToken);
+      // axiosInstance.defaults.headers.common['Authorization'] = accessToken;
+
+      // Redirect to home
+      navigate('/home');
+
     } catch (err) {
       console.error('Registration error:', err.response?.data || err.message);
       setError(err.response?.data?.message || 'Registration failed');
@@ -31,9 +47,7 @@ const Register = () => {
       <h2 className="text-2xl font-bold text-center mb-6">Register</h2>
       <form onSubmit={handleRegisterSubmit}>
         <div className="mb-4">
-          <label htmlFor="username" className="block text-gray-700 mb-1">
-            Username
-          </label>
+          <label htmlFor="username" className="block text-gray-700 mb-1">Username</label>
           <input
             id="username"
             type="text"
@@ -45,9 +59,7 @@ const Register = () => {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="email" className="block text-gray-700 mb-1">
-            Email
-          </label>
+          <label htmlFor="email" className="block text-gray-700 mb-1">Email</label>
           <input
             id="email"
             type="email"
@@ -59,9 +71,7 @@ const Register = () => {
           />
         </div>
         <div className="mb-6">
-          <label htmlFor="password" className="block text-gray-700 mb-1">
-            Password
-          </label>
+          <label htmlFor="password" className="block text-gray-700 mb-1">Password</label>
           <input
             id="password"
             type="password"
@@ -81,7 +91,6 @@ const Register = () => {
         </button>
         {error && <div className="text-red-500 mt-4 text-center">{error}</div>}
       </form>
-      {/* Alternative Google Login */}
       <div className="mt-6">
         <GoogleLogin />
       </div>

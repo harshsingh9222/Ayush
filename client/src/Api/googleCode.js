@@ -1,11 +1,14 @@
-import axios from 'axios'
-
-const api=axios.create({
-    baseURL:'http://localhost:3000/auth'
-});
+import axiosInstance from "../utils/axios.helper";
 
 export const googleAuth = (code) => {
-    return api.get(`/google?code=${code}`);
-  };
-export const registerUser = (data) => api.post('/register', data);
-export const loginUser = (data) => api.post('/login', data);
+  return axiosInstance.post('/auth/google/callback', { code });
+};
+
+
+export const registerUser = (data) => {
+  return axiosInstance.post('/auth/register', data);
+};
+
+export const loginUser = (data) => {
+  return axiosInstance.post('/auth/login', data);
+};

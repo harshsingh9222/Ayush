@@ -6,16 +6,5 @@ const axiosInstance = axios.create({
     withCredentials: true, 
 });
 
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      config.headers['Authorization'] = token;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
 
 export default axiosInstance;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import GoogleLogin from './GoogleLogin.jsx';
 import axiosInstance from '../../utils/axios.helper.js'; 
 import {login as authLogin } from '../../store/authSlice.js'
@@ -13,6 +13,7 @@ const LocalLogin = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate()
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -23,11 +24,12 @@ const LocalLogin = () => {
       console.log('Login successful:', response.data);
       // Handle successful login (e.g., store token, redirect, etc.)
     
-      const accessToken = `Bearer ${response.data.token}`;
-      localStorage.setItem('access_token', accessToken);
-      axiosInstance.defaults.headers.common['Authorization'] = accessToken;
+      // const accessToken = `Bearer ${response.data.token}`;
+      // localStorage.setItem('access_token', accessToken);
+      // axiosInstance.defaults.headers.common['Authorization'] = accessToken;
       
       dispatch(authLogin(response.data.user)); 
+      navigate('/home')
      
     } catch (err) {
       console.error('Login error:', err.response?.data || err.message);
