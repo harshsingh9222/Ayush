@@ -47,6 +47,16 @@ const Header = () => {
               </Link>
             </li>
           )}
+          <li>
+            <Link to="/profile" className="hover:underline">
+              Profile
+            </Link>
+          </li>
+          <li>
+            <Link to="/dashboard" className="hover:underline">
+              Dashboard
+            </Link>
+          </li>
         </ul>
       </nav>
     </header>
