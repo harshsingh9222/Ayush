@@ -17,7 +17,7 @@ import { fetchCurrentRepresentative } from './hooks/getCurrentRepresentative';
 import { fetchBusiness } from './hooks/getBusiness';
 import ProfilePage from './pages/ProfilePage';
 import CompanyDashboard from "./pages/CompanyDashboard"
-import Loan from "./components/Loan/loan";
+import Fund from "./components/fund/Fund";
 
 function App() {
   const dispatch = useDispatch();
@@ -28,16 +28,10 @@ function App() {
   const representativeData = useSelector((state) => state.representative.representativeData);
 
   useEffect(() => {
-    if(authStatus){
       getCurrentUser(dispatch)
       fetchCurrentRepresentative(dispatch)
       fetchBusiness(dispatch)
        .finally(() => setLoading(false));
-    }
-    else{
-      setLoading(false)
-    }
-
   }, [authStatus,dispatch]);
 
 
@@ -69,7 +63,7 @@ function App() {
           <Route path="/work" element={<WorkPage/>} />
           <Route path="/profile" element={<ProfilePage/>} />
           <Route path="/dashboard" element={<CompanyDashboard/>} />
-          <Route path="/loan" element={<Loan/>} />
+          <Route path="/fund" element={<Fund/>} />
         </Routes>
       </main>
     </div>

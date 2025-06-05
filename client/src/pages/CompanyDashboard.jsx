@@ -142,10 +142,10 @@ function CompanyDashboard() {
             */}
 
             <button
-                onClick={() => navigate("/loan")}
+                onClick={() => navigate("/fund")}
                 className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition mt-6 block mx-auto"
             >
-                Apply for Loan
+                Apply for funds
             </button>
 
             {/* here i will write the logic of the if any campegin is currently running or not or completed 
