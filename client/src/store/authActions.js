@@ -7,6 +7,7 @@ export const performLogout = () => async (dispatch) => {
     if (res.status === 200) {
       console.log('Logout successful:', res.data);
       // Optionally, you can handle any additional cleanup here
+          window.location.reload();
     } else {
       console.error('Logout failed:', res.data);
     }

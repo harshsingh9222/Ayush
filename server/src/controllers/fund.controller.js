@@ -6,6 +6,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import Representative from "../models/Representative.model.js";
 import Business from "../models/Business.model.js";
+import { sendSubmissionNotifications } from "../utils/notifications.js";
 
 function safeParseJSON(value) {
     try {
@@ -353,10 +354,11 @@ const completeApplication = asyncHandler(async (req, res) => {
         }
         fund.stepsCompleted = Math.max(fund.stepsCompleted || 0, 4);
         fund.status = "Submitted - PendingValidation";
-        await fund.save()
+        await fund.save();
+        await sendSubmissionNotifications(fund);
         res.status(200).json(new ApiResponse(200, fund, "Final Data submitted Successfully"));
     } catch (error) {
-        return res.status(500).json(new ApiError(500, "Error fetching current fund", error));
+        return res.status(500).json(new ApiError(500, "Error in submitting Final Form", error));
     }
 })
 

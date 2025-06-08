@@ -42,7 +42,7 @@ const HomePage = () => {
         </p>
         <button onClick={handleGetStarted}
           className="btn inline-block mt-6 bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition duration-200">
-          Get Started
+          Register Business
         </button>
       </section>
 
