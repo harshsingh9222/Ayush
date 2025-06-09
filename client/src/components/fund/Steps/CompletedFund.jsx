@@ -1,12 +1,10 @@
-// src/components/Fund/Steps/CompletedFund.jsx
-
 import React from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 export default function CompletedFund() {
   const navigate = useNavigate();
-  const fundData = useSelector((s) => s.fund.fundData) || {};
+  const fundData = useSelector((s) => s.fund.currentFundData) || {};
   const refNo = fundData.applicationReferenceNumber || "—";
 
   return (
@@ -23,10 +21,10 @@ export default function CompletedFund() {
         You may track your application status in your Dashboard.
       </p>
       <button
-        onClick={() => navigate("/dashboard")}
+        onClick={() => navigate("/dashboard/funds")}
         className="px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
       >
-        Go to Dashboard
+        Go to Fund Dashboard
       </button>
     </div>
   );

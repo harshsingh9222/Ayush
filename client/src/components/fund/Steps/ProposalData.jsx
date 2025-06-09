@@ -4,11 +4,11 @@ import React, {
     useImperativeHandle,
     forwardRef,
     useEffect,
-    useState, // Keep for error message and potentially existing file names
+    useState,
     useMemo,
 } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
-import { useSelector } from "react-redux"; // Assuming you'll set this up
+import { useSelector } from "react-redux";
 import { useQuill } from "react-quilljs";
 import "quill/dist/quill.snow.css";
 import { Pie } from "react-chartjs-2";
@@ -24,18 +24,14 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const MAX_FILE_SIZE_MB = 2;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
-const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for clarity
-    // Assuming existingData comes from Redux or a similar prop structure.
-    // For simplicity, I'll use existingDataFromProp. Replace with useSelector if needed.
-    const existingData = useSelector((state) => state.fund.fundData || {});
-    //   const existingData = existingDataFromProp; // Using prop directly for this example
+const ProposalData = forwardRef(({ onSubmit }, ref) => {
+    const fundData = useSelector((state) => state.fund.currentFundData || {});
 
-    const [error, setError] = useState(""); // For general form errors not caught by RHF field errors
+    const [error, setError] = useState("");
 
-    // Store existing file names/URLs to display them if no new file is selected
     const [existingFileNames, setExistingFileNames] = useState({
         ownershipProofFile: null,
-        leaseDeedFile: null, // Assuming leaseDeedFile was for "Owned" type in original logic
+        leaseDeedFile: null,
         leaseLicenseFile: null,
         equipmentFiles: [],
         registrationFiles: [],
@@ -87,7 +83,7 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
                     registrationFile: null,
                 },
             ],
-            milestoneRows: [ // Renamed for consistency
+            milestoneRows: [ 
                 {
                     milestone: "",
                     month: "",
@@ -127,55 +123,51 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
     });
 
 
-    // Initialize form with existingData
     useEffect(() => {
-        if (existingData && Object.keys(existingData).length > 0) {
+        if (fundData && Object.keys(fundData).length > 0) {
             const formValues = {
-                projectTitle: existingData.projectTitle || "",
-                projectDuration: existingData.projectDuration || "",
-                totalProjectCost: existingData.totalProjectCost || "",
-                grantAmountSought: existingData.grantAmountSought || "",
-                stateShare: existingData.stateShare || 0, // Will be recalculated
-                objectivesHtml: existingData.objectivesHtml || "",
-                outcomesHtml: existingData.outcomesHtml || "",
+                projectTitle: fundData.projectTitle || "",
+                projectDuration: fundData.projectDuration || "",
+                totalProjectCost: fundData.totalProjectCost || "",
+                grantAmountSought: fundData.grantAmountSought || "",
+                stateShare: fundData.stateShare || 0, // Will be recalculated
+                objectivesHtml: fundData.objectivesHtml || "",
+                outcomesHtml: fundData.outcomesHtml || "",
                 infrastructureDetails: {
-                    locationType: existingData.infrastructureDetails?.locationType || "",
-                    builtUpArea: existingData.infrastructureDetails?.builtUpArea || "",
+                    locationType: fundData.infrastructureDetails?.locationType || "",
+                    builtUpArea: fundData.infrastructureDetails?.builtUpArea || "",
                 },
-                equipmentRows: existingData.equipmentAndMachinery || [
+                equipmentRows: fundData.equipmentAndMachinery || [
                     { equipmentName: "", quantity: "", unitCost: "", vendorName: "", totalCost: 0 },
                 ],
-                staffRows: existingData.staffingPlan || [
+                staffRows: fundData.staffingPlan || [
                     { role: "", qualification: "", monthlySalary: "", duration: "", ayushRegistrationNumber: "" },
                 ],
-                milestoneRows: existingData.timeLineAndMilestones || [
+                milestoneRows: fundData.timeLineAndMilestones || [
                     { milestone: "", month: "", deliverables: "", status: "Pending" },
                 ],
             };
             reset(formValues);
 
-            // Set Quill content after reset
-            if (quillObj && existingData.objectivesHtml) {
-                quillObj.clipboard.dangerouslyPasteHTML(existingData.objectivesHtml);
+            if (quillObj && fundData.objectivesHtml) {
+                quillObj.clipboard.dangerouslyPasteHTML(fundData.objectivesHtml);
             }
-            if (quillOut && existingData.outcomesHtml) {
-                quillOut.clipboard.dangerouslyPasteHTML(existingData.outcomesHtml);
+            if (quillOut && fundData.outcomesHtml) {
+                quillOut.clipboard.dangerouslyPasteHTML(fundData.outcomesHtml);
             }
 
-            // Populate existing file names for display
             setExistingFileNames({
-                ownershipProofFile: existingData.infrastructureDetails?.ownershipProofFileName || null, // Assuming you store filename
-                leaseDeedFile: existingData.infrastructureDetails?.leaseDeedFileName || null,
-                leaseLicenseFile: existingData.infrastructureDetails?.leaseLicenseFileName || null,
-                equipmentFiles: (existingData.equipmentAndMachinery || []).map(e => e.vendorQuotationFileName || null),
-                registrationFiles: (existingData.staffingPlan || []).map(s => s.registrationFileName || null),
+                ownershipProofFile: fundData.infrastructureDetails?.ownershipProofFileName || null,
+                leaseDeedFile: fundData.infrastructureDetails?.leaseDeedFileName || null,
+                leaseLicenseFile: fundData.infrastructureDetails?.leaseLicenseFileName || null,
+                equipmentFiles: (fundData.equipmentAndMachinery || []).map(e => e.vendorQuotationFileName || null),
+                registrationFiles: (fundData.staffingPlan || []).map(s => s.registrationFileName || null),
             });
 
         }
-    }, [existingData, reset, quillObj, quillOut]);
+    }, [fundData, reset, quillObj, quillOut]);
 
 
-    // Sync Quill with react-hook-form
     useEffect(() => {
         if (quillObj) {
             quillObj.on("text-change", (delta, oldDelta, source) => {
@@ -210,7 +202,6 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
         }
     }, [quillOut, setValue, setFieldError, clearFieldError]);
 
-    // Watch values for calculations
     const watchedTotalProjectCost = watch("totalProjectCost");
     const watchedGrantAmountSought = watch("grantAmountSought");
     const watchedEquipmentRows = watch("equipmentRows");
@@ -218,14 +209,12 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
     const watchedLocationType = watch("infrastructureDetails.locationType");
     const watchedBuiltUpArea = watch("infrastructureDetails.builtUpArea");
 
-    // Calculate State Share
     useEffect(() => {
         const t = parseInt(watchedTotalProjectCost) || 0;
         const g = parseInt(watchedGrantAmountSought) || 0;
         setValue("stateShare", t > g ? t - g : 0);
     }, [watchedTotalProjectCost, watchedGrantAmountSought, setValue]);
 
-    // Calculate Total Cost for Equipment Rows
     useEffect(() => {
         watchedEquipmentRows?.forEach((row, index) => {
             const qty = parseInt(row.quantity) || 0;
@@ -237,7 +226,6 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
     }, [watchedEquipmentRows, setValue]);
 
 
-    // Budget Pie Chart data
     const pieData = useMemo(() => {
         const equipmentSum = watchedEquipmentRows?.reduce(
             (sum, row) => sum + (parseInt(row.totalCost) || 0), 0
@@ -265,7 +253,6 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
     }, [watchedEquipmentRows, watchedStaffRows, watchedLocationType, watchedBuiltUpArea, watchedTotalProjectCost]);
 
 
-    // Expose submitForm to parent
     useImperativeHandle(ref, () => ({
         submitForm: () => {
             handleSubmit(onValidSubmit, onInvalidSubmit)();
@@ -275,19 +262,15 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
     const onInvalidSubmit = (errors) => {
         console.error("Form validation errors:", errors);
         setError("Please correct the errors in the form.");
-        // Scroll to the first error
         const firstErrorField = Object.keys(errors)[0];
         if (firstErrorField) {
-            // For nested fields like equipmentRows.0.equipmentName
             const fieldElement = document.getElementsByName(firstErrorField)[0] || document.getElementById(firstErrorField);
             fieldElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     };
 
     const onValidSubmit = async (data) => {
-        setError(""); // Clear general error
-
-        // --- Additional custom validations ---
+        setError("");
         const tCost = parseInt(data.totalProjectCost);
         const gCost = parseInt(data.grantAmountSought);
 
@@ -300,7 +283,6 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
             return;
         }
 
-        // Quill content length (already handled by text-change, but good to double check)
         if ((quillObj?.getText() || "").trim().length < 500) {
             setFieldError("objectivesHtml", { type: "manual", message: "Objectives must be at least 500 characters." });
             setError("Objectives content is too short.");
@@ -312,9 +294,6 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
             return;
         }
 
-        // File validations (example for one file, extend for others)
-        // This is simplified. Ideally, file validation should happen on change.
-        // For RHF, custom 'validate' rule on register is better.
         const locationType = data.infrastructureDetails.locationType;
         const ownershipProofFile = data.ownershipProofFile?.[0];
         const leaseLicenseFile = data.leaseLicenseFile?.[0];
@@ -330,16 +309,14 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
             return;
         }
 
-        // Consolidate files
         const filesToSubmit = {
             ownershipProofFile: data.ownershipProofFile?.[0] instanceof File ? data.ownershipProofFile[0] : null,
-            leaseDeedFile: data.leaseDeedFile?.[0] instanceof File ? data.leaseDeedFile[0] : null, // Assuming you add this field
+            leaseDeedFile: data.leaseDeedFile?.[0] instanceof File ? data.leaseDeedFile[0] : null, 
             leaseLicenseFile: data.leaseLicenseFile?.[0] instanceof File ? data.leaseLicenseFile[0] : null,
             equipmentFiles: data.equipmentRows.map(row => row.vendorQuotationFile?.[0] instanceof File ? row.vendorQuotationFile[0] : null),
             registrationFiles: data.staffRows.map(row => row.registrationFile?.[0] instanceof File ? row.registrationFile[0] : null),
         };
 
-        // Prepare data for submission (remove FileList objects, parse numbers)
         const submissionData = {
             ...data,
             totalProjectCost: parseInt(data.totalProjectCost),
@@ -355,7 +332,7 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
                 unitCost: parseInt(row.unitCost),
                 vendorName: row.vendorName,
                 totalCost: parseInt(row.totalCost),
-                // vendorQuotationFile will be handled by filesToSubmit
+                
             })),
             staffingPlan: data.staffRows.map(row => ({
                 role: row.role,
@@ -363,9 +340,9 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
                 monthlySalary: parseInt(row.monthlySalary),
                 duration: parseInt(row.duration),
                 ayushRegistrationNumber: row.ayushRegistrationNumber,
-                // registrationFile will be handled by filesToSubmit
+                
             })),
-            timeLineAndMilestones: data.milestoneRows.map(ms => ({ // Mapped from milestoneRows
+            timeLineAndMilestones: data.milestoneRows.map(ms => ({
                 milestone: ms.milestone,
                 month: parseInt(ms.month),
                 deliverables: ms.deliverables,
@@ -373,13 +350,10 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
             })),
         };
 
-        // Remove original file fields from submissionData as they are FileLists
         delete submissionData.ownershipProofFile;
         delete submissionData.leaseDeedFile;
         delete submissionData.leaseLicenseFile;
-        // RHF would have equipmentRows still contain vendorQuotationFile: FileList
-        // And staffRows would contain registrationFile: FileList.
-        // The mapping above for equipmentAndMachinery and staffingPlan already omits them.
+
 
 
         console.log("Submitting Data:", submissionData);
@@ -392,8 +366,8 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
         setValue("infrastructureDetails.locationType", newLocationType);
         if (newLocationType !== "Owned" && newLocationType !== "Rented") {
             setValue("infrastructureDetails.builtUpArea", "");
-            setValue("ownershipProofFile", null); // Clear file input
-            setValue("leaseLicenseFile", null);   // Clear file input
+            setValue("ownershipProofFile", null);
+            setValue("leaseLicenseFile", null);  
             setExistingFileNames(prev => ({ ...prev, ownershipProofFile: null, leaseLicenseFile: null }));
         }
     };
@@ -417,7 +391,6 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
         <div>
             {error && <p className="text-red-500 mb-4 p-2 bg-red-100 border border-red-500 rounded">{error}</p>}
 
-            {/* Project Title */}
             <div className="mb-4">
                 <label htmlFor="projectTitle" className="block font-medium mb-1">
                     Project Title <span className="text-red-500">*</span>
@@ -436,7 +409,6 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
                 {errors.projectTitle && <p className="text-red-500 text-sm mt-1">{errors.projectTitle.message}</p>}
             </div>
 
-            {/* Project Duration */}
             <div className="mb-4">
                 <label htmlFor="projectDuration" className="block font-medium mb-1">
                     Project Duration <span className="text-red-500">*</span>
@@ -456,7 +428,6 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
                 <p className="text-xs text-gray-500 mt-1">NAM projects usually approved for up to 24 months.</p>
             </div>
 
-            {/* Total Cost & Grant Sought */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                     <label htmlFor="totalProjectCost" className="block font-medium mb-1">
@@ -509,12 +480,10 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
                 </div>
             </div>
 
-            {/* Objectives & Outcomes */}
             <div className="mb-4">
                 <label className="block font-medium mb-1">
                     Objectives <span className="text-red-500">*</span>
                 </label>
-                {/* Hidden input for RHF */}
                 <input type="hidden" {...register("objectivesHtml", { required: "Objectives are required." })} />
                 <div
                     ref={objectivesRef}
@@ -535,7 +504,6 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
                 <p className="text-xs text-gray-500">(Write at least 500 characters describing outcomes.)</p>
             </div>
 
-            {/* Infrastructure Details */}
             <div className="mb-4">
                 <label className="block font-medium mb-1">Infrastructure Details (if applicable)</label>
                 <select
@@ -607,7 +575,6 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
                 )}
             </div>
 
-            {/* Equipment & Machinery Table */}
             <div className="mb-4">
                 <label className="block font-medium mb-2">Equipment & Machinery</label>
                 {equipmentFields.map((field, idx) => (
@@ -690,7 +657,6 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
                 </button>
             </div>
 
-            {/* Staffing Plan Table */}
             <div className="mb-4">
                 <label className="block font-medium mb-2">Staffing Plan</label>
                 {staffFields.map((field, idx) => (
@@ -764,7 +730,6 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
                 </button>
             </div>
 
-            {/* Timeline & Milestones */}
             <div className="mb-4">
                 <label className="block font-medium mb-2">Timeline & Milestones</label>
                 {milestoneFields.map((field, idx) => (
@@ -818,7 +783,6 @@ const ProposalData = forwardRef(({ onSubmit }, ref) => { // Renamed prop for cla
                 </button>
             </div>
 
-            {/* Budget Break-Up Summary (Pie chart) */}
             <div className="mb-6">
                 <label className="block font-medium mb-2">Budget Break-Up Summary</label>
                 <div className="max-w-md mx-auto">

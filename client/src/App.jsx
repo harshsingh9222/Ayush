@@ -18,6 +18,8 @@ import { fetchBusiness } from './hooks/getBusiness';
 import ProfilePage from './pages/ProfilePage';
 import CompanyDashboard from "./pages/CompanyDashboard"
 import Fund from "./components/fund/Fund";
+import FundsList from './components/fund/FundsList';
+import ReviewSubmission from './components/fund/Steps/ReviewSubmission';
 
 function App() {
   const dispatch = useDispatch();
@@ -63,7 +65,10 @@ function App() {
           <Route path="/work" element={<WorkPage/>} />
           <Route path="/profile" element={<ProfilePage/>} />
           <Route path="/dashboard" element={<CompanyDashboard/>} />
-          <Route path="/fund" element={<Fund/>} />
+          <Route path="/dashboard/funds" element={<FundsList/>} />
+          <Route path="/fund/:fundId/step/:stepNumber" element={<Fund/>} />
+          <Route path="/fund/:fundId/view" element={<ReviewSubmission readOnly={true} />}/>
+          <Route path="/fund" element={<Navigate to="/dashboard/funds"/>} />
         </Routes>
       </main>
     </div>

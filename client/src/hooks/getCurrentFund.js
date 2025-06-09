@@ -1,9 +1,9 @@
 import axiosInstance from "../utils/axios.helper";
 import { addFund } from "../store/Fundstate/fundSlice";
 
-export const getCurrentFund = async (dispatch) => {
+export const getCurrentFund = async (dispatch,fundId) => {
     try {
-        const response = await axiosInstance.get('/fund/current-fund');
+        const response = await axiosInstance.get(`/fund/:${fundId}`);
         console.log("Fund response:", response.data);
         if (response.data.data) {
             const getFund = response.data.data;

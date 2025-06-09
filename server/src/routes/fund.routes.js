@@ -1,13 +1,20 @@
 import { Router } from "express";
 import { verifyJWT } from "../Middlewares/auth.middleware.js";
 import { upload } from "../Middlewares/multer.middleware.js";
-import {stepFund,getCurrentFund,completeApplication} from "../controllers/fund.controller.js";
+import {
+    updateFundStep,
+    submitFinalApplication,
+    getFundById,
+    createFundDraft,
+    getAllFund,
+} from "../controllers/fund.controller.js";
 
 const router = Router();
-
-router.route('/step-apply/:step').post(verifyJWT, upload.any(), stepFund);
-router.route('/current-fund').get(verifyJWT, getCurrentFund);
-router.route('/complete-application').post(verifyJWT,completeApplication)
+router.route('/').get(verifyJWT,getAllFund)
+router.route('/').post(verifyJWT,createFundDraft)
+router.route('/:fundId').get(verifyJWT, getFundById);
+router.route('/:fundId/step/:stepNumber').put(verifyJWT, upload.any(), updateFundStep);
+router.route('/:fundId/submit').post(verifyJWT, submitFinalApplication)
 
 
 export default router;

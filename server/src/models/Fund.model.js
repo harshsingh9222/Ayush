@@ -160,14 +160,14 @@ const fundSchema = new mongoose.Schema({
     },
     scheme: {
         type: String,
-        enum: ["NAM", "AEDS", "Others"],
-        required: true,
+        enum: ["NAM", "AEDS", "Others",""],
+        // required: true,
         trim: true
     },
     subcomponent: {
         type: String,
-        enum: ["Infrastructure", "Equipment", "QualityLabs", "MedicinalPlants", "CapacityBuilding", "SeedCapital", "InterestSubsidy"],
-        required: true,
+        enum: ["","Infrastructure", "Equipment", "QualityLabs", "MedicinalPlants", "CapacityBuilding", "SeedCapital", "InterestSubsidy"],
+        // required: true,
         trim: true
     },
     stepsCompleted: {
@@ -245,8 +245,8 @@ const fundSchema = new mongoose.Schema({
                 type: String
             }
         ],
-        vendorQuotationPaths:[{
-            type:String,
+        vendorQuotationPaths: [{
+            type: String,
         }],
         siteLayoutPlanPath: {
             type: String
@@ -271,7 +271,41 @@ const fundSchema = new mongoose.Schema({
 
     status: {
         type: String,
-        enum: ['Draft', 'Submitted - PendingValidation', 'UnderStateValidation', 'UnderTechnicalReview', 'UnderFinancialReview', 'Approved', 'Rejected', 'PendingStateShare', 'PendingSiteInspection', 'Disbursed'],
+        enum: [
+
+            // Drafting & Submission
+            'Draft',
+            'Submitted - PendingValidation', // basic server‐side checks (file size/type, budget sums)
+
+            // State Share
+            'PendingStateShare',           // waiting for State‐share commitment letter
+            'StateShareApproved',          // State‐share is signed off
+
+            // Technical & Financial Review
+            'UnderTechnicalReview',        // AYUSH Tech Committee
+            'TechnicalQueryRaised',        // they asked for more info
+            'UnderFinancialReview',        // finance panel
+            'FinancialQueryRaised',        // budget questions
+
+            // Inspection
+            'PendingSiteInspection',       // scheduled
+            'InspectionCompleted',         // inspector uploaded report
+
+            // Approval & Sanction
+            'Approved',                    // sanction order generated
+            'Rejected',                    // final rejection
+
+            // Disbursement & UCs
+            'FirstInstallmentDisbursed',   // 1st tranche out
+            'UC1Submitted',                // user uploaded UC1
+            'UC1Approved',                 // UC1 accepted
+            'SecondInstallmentDisbursed',  // 2nd tranche
+            'UC2Submitted',                // user uploaded UC2 / final UC
+            'UC2Approved',                 // final UC accepted
+
+            // Closure
+            'Closed'                       // everything done—project closed & audited
+        ],
         default: 'Draft',
     },
     createdAt: {
@@ -321,14 +355,31 @@ fundSchema.virtual('stateShare').get(function () {
 
 fundSchema.pre('save', async function (next) {
     if (this.isNew && !this.applicationReferenceNumber && this.status === 'Draft') {
-        const year = new Date().getFullYear();
-        // Option A: Use this.constructor instead of Fund
-        const count = await this.constructor.countDocuments({
-            createdAt: { $gte: new Date(year, 0, 1), $lt: new Date(year + 1, 0, 1) }
-        });
-        //generate a logic for stateCode
-        const stateCode = "STATE";
-        this.applicationReferenceNumber = `APP-${year}-${stateCode}-${String(count + 1).padStart(6, '0')}`;
+        try {
+            const year = new Date().getFullYear();
+            const countThisYear = await this.constructor.countDocuments({
+                createdAt: {
+                    $gte: new Date(year, 0, 1),
+                    $lt: new Date(year + 1, 0, 1)
+                }
+            });
+
+            const seqNum = String(countThisYear + 1).padStart(6, '0');
+
+            const BusinessModel = this.constructor.model('Business');
+            const biz = await BusinessModel.findById(this.businessId).select('state');
+            if (!biz || !biz.state) {
+                var stateCode = 'STATE'
+            }
+            else {
+                let raw = biz.state.trim().replace(/[^A-Za-z]/g, '').toUpperCase();
+                stateCode = raw.substring(0, 3) || 'STATE';
+            }
+            this.applicationReferenceNumber = `APP-${year}-${stateCode}-${seqNum}`;
+
+        } catch (error) {
+            return next(error)
+        }
     }
     if (this.status !== 'Draft' && !this.submittedAt && this.isModified('status')) {
         this.submittedAt = new Date();

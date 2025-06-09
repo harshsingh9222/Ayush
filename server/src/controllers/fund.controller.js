@@ -32,15 +32,119 @@ const step2DocFieldsConfig = [
     { name: "additionalSupportingDocumentsPaths", isArray: true },
 ];
 
-const stepFund = asyncHandler(async (req, res) => {
+const getAllFund = asyncHandler(async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const representative = await Representative.findOne({ userId })
+        console.log('representative data :>> ', representative);
+
+        if (!representative) {
+            return res.status(404).json(new ApiError(404, "Representative not found", null));
+        }
+        const business = await Business.findOne({ representative: representative._id });
+        if (!business) {
+            return res.status(404).json(new ApiError(404, "Business not found", null));
+        }
+        console.log('business data:>> ', business);
+        const businessId = business._id;
+        const allFunds = await Fund.find({ businessId }).sort({ createdAt: -1 })
+        console.log('allFunds data :>>', allFunds);
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, allFunds, 'All Funds fetched successfully')
+            )
+
+    } catch (error) {
+        return res.status(500).json(new ApiError(500, "Error fetching All funds for the particular business", error));
+    }
+})
+
+const createFundDraft = asyncHandler(async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const representative = await Representative.findOne({ userId })
+        console.log('representative data :>> ', representative);
+
+        if (!representative) {
+            return res.status(404).json(new ApiError(404, "Representative not found", null));
+        }
+        const business = await Business.findOne({ representative: representative._id });
+        if (!business) {
+            return res.status(404).json(new ApiError(404, "Business not found", null));
+        }
+        console.log('business data:>> ', business);
+        const businessId = business._id;
+
+        const fund = new Fund({
+            businessId,
+            scheme: "",
+            subcomponent: "",
+            status: "Draft",
+            stepsCompleted: 0,
+        })
+        await fund.save();
+        return res
+            .status(201)
+            .json(
+                new ApiResponse(201, fund, "New Fund Draft Created Successfully")
+            )
+    } catch (error) {
+        console.error("❌ New Fund Creation Error", error);
+        console.error("❌ Mongoose Validation Errors (if any):", error.errors);
+        return res
+            .status(500)
+            .json({ success: false, message: error.message, stack: error.stack });
+    }
+})
+
+const getFundById = asyncHandler(async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const representative = await Representative.findOne({ userId })
+        console.log('representative data :>> ', representative);
+
+        if (!representative) {
+            return res.status(404).json(new ApiError(404, "Representative not found", null));
+        }
+        const business = await Business.findOne({ representative: representative._id });
+        if (!business) {
+            return res.status(404).json(new ApiError(404, "Business not found", null));
+        }
+        console.log('business data:>> ', business);
+        const businessId = business._id;
+        const { fundId } = req.params;
+        const fund = await Fund.findById(fundId);
+        if (!fund) {
+            return res
+                .status(404)
+                .json(
+                    new ApiError(404, "Fund Not Found", null)
+                )
+        }
+        if (String(businessId) !== String(fund.businessId)) {
+            return res.status(403)
+                .json(new ApiError(403, 'Forbidden ,not valid business'))
+        }
+        return res.status(200)
+            .json(new ApiResponse(200, fund, "Current fund fetched Successfully"))
+    } catch (error) {
+        return res.status(500)
+            .json(new ApiError(500, 'Error getting fund by Id', null))
+    }
+})
+
+const updateFundStep = asyncHandler(async (req, res) => {
     console.log("Body", req.body);
 
-    const step = parseInt(req.params.step);
     const fundData = req.body;
     const files = req.files;
+    const { fundId, stepNumber } = req.params;
+    const step = parseInt(stepNumber, 10);
     console.log("fundData: ", fundData);
     console.log('step:', step);
     console.log('files:', files);
+    console.log('fundId :>> ', fundId);
     // Validate step
     const userId = req.user._id;
     const representative = await Representative.findOne({ userId })
@@ -56,7 +160,18 @@ const stepFund = asyncHandler(async (req, res) => {
     console.log('business data:>> ', business);
     const businessId = business._id;
 
-
+    const fund = await Fund.findById(fundId);
+    if (!fund) {
+        return res.status(404).json(new ApiError(404, "Fund not found for this Id", null));
+    }
+    if (String(businessId) !== String(fund.businessId)) {
+        return res.status(403)
+            .json(new ApiError(403, 'Forbidden ,not valid business'))
+    }
+    if (fund.status !== 'Draft') {
+        return res.status(403)
+            .json(new ApiError(403, 'Cannot modify an already Submitted form'))
+    }
 
     if (step == 0) {
         try {
@@ -86,16 +201,13 @@ const stepFund = asyncHandler(async (req, res) => {
                 return res.status(400).json(new ApiError(400, "Invalid subcomponent", null));
             }
 
-            // Create the fund object
-            const fund = new Fund({
-                businessId,
-                scheme,
-                subcomponent,
-                stepsCompleted: 1,
-            });
+            // Update fund
+            fund.scheme = scheme
+            fund.subcomponent = subcomponent
+            fund.stepsCompleted = Math.max(fund.stepsCompleted || 0, 1);
             await fund.save();
             console.log('fund Data:>> ', fund);
-            return res.status(201).json(new ApiResponse(201, fund, "Fund created successfully"));
+            return res.status(201).json(new ApiResponse(201, fund, "Step 0 completed successfully"));
         } catch (error) {
             console.error("❌ STEP 0 ERROR:", error);
             console.error("❌ Mongoose Validation Errors (if any):", error.errors);
@@ -106,11 +218,6 @@ const stepFund = asyncHandler(async (req, res) => {
     }
     else if (step == 1) {
         try {
-            // Validate that the fund exists
-            const fund = await Fund.findOne({ businessId });
-            if (!fund) {
-                return res.status(404).json(new ApiError(404, "Fund not found for this business", null));
-            }
             const {
                 projectTitle,
                 projectDuration,
@@ -151,7 +258,7 @@ const stepFund = asyncHandler(async (req, res) => {
                 fileMap[f.fieldname].push(f);
             }
 
-            console.log('fileMap :>> ', fileMap);
+            // console.log('fileMap :>> ', fileMap);
 
             const updatedInfra = { locationType: infraData.locationType || null };
 
@@ -167,7 +274,7 @@ const stepFund = asyncHandler(async (req, res) => {
             if (typeof infraData.builtUpArea === 'number' && infraData.builtUpArea >= 0) {
                 updatedInfra.builtUpArea = infraData.builtUpArea;
             }
-            console.log('updatedInfra:>> ', updatedInfra);
+            // console.log('updatedInfra:>> ', updatedInfra);
 
             const updatedEquipment = equipmentArray.map((row, index) => {
                 const eq = {
@@ -190,7 +297,7 @@ const stepFund = asyncHandler(async (req, res) => {
                 }
                 return eq;
             });
-            console.log('updatedEquipment:>> ', updatedEquipment);
+            // console.log('updatedEquipment:>> ', updatedEquipment);
 
             const updatedStaffing = staffingArray.map((row, index) => {
                 const st = {
@@ -252,11 +359,6 @@ const stepFund = asyncHandler(async (req, res) => {
     }
     else if (step === 2) {
         try {
-            const fund = await Fund.findOne({ businessId });
-            if (!fund) {
-                return res.status(404).json(new ApiError(404, "Fund not found for this business", null));
-            }
-
             if (!fund.uploads) {
                 fund.uploads = {};
             }
@@ -329,10 +431,14 @@ const stepFund = asyncHandler(async (req, res) => {
                 .json({ success: false, message: error.message, stack: error.stack });
         }
     }
+    else {
+        return res.status(400).json({ success: false, message: "Invalid request" });
+    }
 })
 
-const completeApplication = asyncHandler(async (req, res) => {
+const submitFinalApplication = asyncHandler(async (req, res) => {
     const userId = req.user._id;
+    const { fundId } = req.params
     try {
         const representative = await Representative.findOne({ userId });
         if (!representative) {
@@ -342,7 +448,7 @@ const completeApplication = asyncHandler(async (req, res) => {
         if (!business) {
             return res.status(404).json(new ApiError(404, "Business not found", null));
         }
-        const fund = await Fund.findOne({ businessId: business._id });
+        const fund = await Fund.findById(fundId);
         if (!fund) {
             return res.status(404).json(new ApiError(404, "No fund submitted yet", null));
         }
@@ -362,31 +468,10 @@ const completeApplication = asyncHandler(async (req, res) => {
     }
 })
 
-
-const getCurrentFund = asyncHandler(async (req, res) => {
-    const userId = req.user._id;
-    try {
-        const representative = await Representative.findOne({ userId });
-        if (!representative) {
-            return res.status(404).json(new ApiError(404, "Representative not found", null));
-        }
-        const business = await Business.findOne({ representative: representative._id });
-        if (!business) {
-            return res.status(404).json(new ApiError(404, "Business not found", null));
-        }
-        const fund = await Fund.findOne({ businessId: business._id });
-        if (!fund) {
-            return res.status(404).json(new ApiError(404, "No fund found for this business", null));
-        }
-        console.log('Final fund Data :>> ', fund);
-        res.status(200).json(new ApiResponse(200, fund, "Current fund retrieved successfully"));
-    } catch (error) {
-        return res.status(500).json(new ApiError(500, "Error fetching current fund", error));
-    }
-});
-
 export {
-    stepFund,
-    getCurrentFund,
-    completeApplication
+    updateFundStep,
+    submitFinalApplication,
+    getFundById,
+    createFundDraft,
+    getAllFund,
 };

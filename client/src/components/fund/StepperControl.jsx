@@ -5,7 +5,7 @@ const StepperControl = ({ handleClick, currStep, steps }) => {
   return (
     <div className="container flex justify-around mt-4 mb-8 items-center">
       
-      {/* Previous Button */}
+
       <button
         onClick={() => handleClick("Previous")}
         disabled={currStep === 0}
@@ -17,7 +17,6 @@ const StepperControl = ({ handleClick, currStep, steps }) => {
         <ArrowLeftIcon className={`h-6 w-6 ${currStep === 0 ? "text-gray-400" : "text-teal-600"}`} />
       </button>
 
-      {/* Submit / Confirm Button */}
       <button
         onClick={() => handleClick("Submit")}
         className={`bg-teal-600 text-white px-6 py-2 rounded-xl hover:bg-teal-700 
@@ -28,7 +27,6 @@ const StepperControl = ({ handleClick, currStep, steps }) => {
         {currStep >= steps.length - 1 ? "Submit" : "Save"}
       </button>
 
-      {/* Next Button */}
       <button
         onClick={() => handleClick("Next")}
         disabled={currStep === steps.length}

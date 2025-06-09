@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 
 const SelectFundType = forwardRef(({ onSubmit }, ref) => {
-  const fundData = useSelector((state) => state.fund.fundData) || {};
+  const fundData = useSelector((state) => state.fund.currentFundData) || {};
   const hasAYUSHCert =
     useSelector((state) => state.business.businessData?.hasAYUSHCert) || true;
 
@@ -23,7 +23,6 @@ const SelectFundType = forwardRef(({ onSubmit }, ref) => {
     },
   });
 
-  // Only reset if fundData.scheme or fundData.subcomponent actually changed
   useEffect(() => {
     const current = getValues();
     const newScheme = fundData.scheme || "";
@@ -65,14 +64,12 @@ const SelectFundType = forwardRef(({ onSubmit }, ref) => {
   };
 
   const onInvalid = () => {
-    // errors will show under each field
   };
 
   const selectedScheme = watch("scheme");
 
   return (
     <form className="space-y-4">
-      {/* Breadcrumb */}
       <nav className="text-sm text-gray-600 mb-4">
         Dashboard &rsaquo; Apply for Grant
       </nav>
@@ -81,7 +78,6 @@ const SelectFundType = forwardRef(({ onSubmit }, ref) => {
         1. Select Scheme & Sub‐Component
       </h2>
 
-      {/* Scheme Selection */}
       <div className="bg-white border rounded-lg p-4 mb-6">
         <p className="font-medium mb-2">Choose Scheme:</p>
         <div className="ml-4 space-y-2">
@@ -138,7 +134,6 @@ const SelectFundType = forwardRef(({ onSubmit }, ref) => {
         )}
       </div>
 
-      {/* Sub‐Component Selection */}
       {selectedScheme === "NAM" && (
         <div className="bg-white border rounded-lg p-4 mb-6">
           <p className="font-medium mb-2">NAM Sub‐Components:</p>

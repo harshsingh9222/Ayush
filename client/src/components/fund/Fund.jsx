@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useParams } from "react-router-dom";
 import axiosInstance from "../../utils/axios.helper";
 import Stepper from "./Stepper";
 import StepperControl from "./StepperControl";
@@ -9,8 +9,7 @@ import ProposalData from "./Steps/ProposalData";
 import UploadFundDocs from "./Steps/UploadFunddocs";
 import ReviewSubmission from "./Steps/ReviewSubmission";
 import CompletedFund from "./Steps/CompletedFund";
-import { CheckCircle } from "lucide-react";
-import { addFund } from "../../store/Fundstate/fundSlice";
+import { addFund ,setCurrentFund} from "../../store/Fundstate/fundSlice";
 import { getCurrentFund } from "../../hooks/getCurrentFund";
 
 const steps = [
@@ -25,8 +24,9 @@ export default function Fund() {
   const dispatch = useDispatch();
   const authStatus = useSelector((state) => state.auth.status);
   const businessStatus = useSelector((state) => state.business.status);
-  const fundData = useSelector((state) => state.fund.fundData);
-  const fundStatus = useSelector((state) => state.fund.status);
+  const currentFundData = useSelector((state) => state.fund.currentFundData);
+  const currentFundStatus = useSelector((state) => state.fund.currentFundStatus);
+  const {fundId,stepNumber}=useParams();
 
   const [currStep, setCurrStep] = useState(0);
   const [maxStepCompleted, setMaxStepCompleted] = useState(0);
@@ -45,26 +45,25 @@ export default function Fund() {
       navigate("/step");
       return;
     }
-    navigate("/fund");
-    if (fundStatus === false) {
-      getCurrentFund(dispatch);
+
+    if(!fundId) return;
+    if(currentFundStatus==false || !currentFundData || currentFundData._id!=fundId){
+      getCurrentFund(dispatch,fundId);
     }
-    // Pull stepsCompleted from Redux (persisted by your handleStepSubmit)
-    const stepsCompleted = fundData?.stepsCompleted || 0;
+    
+    const stepsCompleted = currentFundData?.stepsCompleted || 0;
     setCurrStep(stepsCompleted);
     setMaxStepCompleted(stepsCompleted);
-  }, [authStatus, businessStatus, fundData, fundStatus, navigate, dispatch]);
+  }, [authStatus, businessStatus, currentFundData, currentFundStatus,fundId, navigate, dispatch]);
 
-  // Called when “Next / Previous / Submit” buttons are clicked
+
   const handleClick = async (direction) => {
     if (direction === "Submit") {
-      // Trigger the final step’s form (ReviewSubmission) if it has a submitForm() method
       try {
         const currentRef = formRefs[currStep]?.current;
         if (currentRef && typeof currentRef.submitForm === "function") {
           await currentRef.submitForm();
         } else {
-          // No submitForm in ReviewSubmission?  Fall back to do a final POST:
           await submitFinalApplication();
         }
       } catch (err) {
@@ -84,20 +83,17 @@ export default function Fund() {
     setCurrStep((prev) => Math.max(prev - 1, 0));
   };
 
-  // Each step calls this callback when its “form” is successfully validated & posted
-  // AFTER: unpack both data and files
+
   const handleStepSubmit = (step) => async (data, files = {}) => {
     console.log("Form data for step", step, ":", data);
     console.log("Files for step", step, ":", files);
 
-    // if(step===steps.length) await submitFinalApplication()
 
     const formData = new FormData();
 
-    // 1) Append JSON fields exactly as strings (arrays become JSON)
     Object.entries(data).forEach(([key, value]) => {
       if (Array.isArray(value)) {
-        // arrays → JSON
+        
         formData.append(key, JSON.stringify(value));
       } else if (
         value !== null &&
@@ -105,17 +101,16 @@ export default function Fund() {
         !(value instanceof File) &&
         !(value instanceof Blob)
       ) {
-        // plain objects → JSON
+        
         formData.append(key, JSON.stringify(value));
       } else {
-        // string, number, boolean, File, Blob, etc.
+        
         formData.append(key, value);
       }
     });
-    // 2) Append files under exactly the fieldnames the controller expects:
-    // Proposal uploads:
+
     if (step === 1) {
-      // Infrastructure uploads:
+
       if (files.ownershipProofFile instanceof File) {
         formData.append(
           "infrastructureDetails.ownershipProofFile",
@@ -135,7 +130,6 @@ export default function Fund() {
         );
       }
 
-      // Equipment PDFs (one or more):
       if (Array.isArray(files.equipmentFiles)) {
         files.equipmentFiles.forEach((f) => {
           if (f instanceof File) {
@@ -144,7 +138,6 @@ export default function Fund() {
         });
       }
 
-      // Staffing registration PDFs (one or more):
       if (Array.isArray(files.registrationFiles)) {
         files.registrationFiles.forEach((f) => {
           if (f instanceof File) {
@@ -165,12 +158,9 @@ export default function Fund() {
       });
     }
 
-    // console.log('formData :>> ', formData);
-
-    // 3) Finally send it off:
     try {
-      const response = await axiosInstance.post(
-        `/fund/step-apply/${step}`,
+      const response = await axiosInstance.put(
+        `/fund/${fundId}/step/${step}`,
         formData
       );
       console.log("Response from server (fund step):", response);
@@ -184,13 +174,12 @@ export default function Fund() {
     }
   };
 
-  // If user somehow clicks “Submit” on the final review step but we haven’t implemented submitForm():
   const submitFinalApplication = async () => {
     try {
-      // If your backend expects a final flag, or no extra data, just call:
-      const response = await axiosInstance.post(`/fund/complete-application`);
+      const response = await axiosInstance.post(`/fund/${fundId}/submit`);
       console.log("Final application response:", response);
-      // Move to “CompletedFund” screen
+      dispatch(addFund(response.data.data));
+
       setCurrStep(steps.length);
     } catch (err) {
       console.error("Error completing fund application:", err);
@@ -204,7 +193,7 @@ export default function Fund() {
           <SelectFundType
             ref={formRefs[0]}
             onSubmit={handleStepSubmit(0)}
-            existingData={{ hasAYUSHCert: true }}
+            existingData={{}}
           />
         );
       case 1:
@@ -231,6 +220,7 @@ export default function Fund() {
               await submitFinalApplication();
             }}
             goToStep={(s) => setCurrStep(s)}
+            readOnly={false}
             collectedData={{}}
           />
         );
@@ -244,7 +234,7 @@ export default function Fund() {
   return (
     <div className="min-h-screen bg-gray-100 p-6 flex flex-col md:flex-row">
       <div className="relative flex flex-col items-center mr-4">
-        {/* Collapse/Expand Toggle */}
+
         <button
           onClick={toggleSidebar}
           className="mb-4 text-indigo-600 focus:outline-none"
@@ -254,7 +244,7 @@ export default function Fund() {
         <Stepper steps={steps} currStep={currStep} isOpen={isOpen} />
       </div>
       <div className="flex-1">
-        {/* Current Step Title */}
+
         {currStep < steps.length && (
           <h2 className="text-2xl font-bold text-indigo-700 mb-6">
             {steps[currStep]}
