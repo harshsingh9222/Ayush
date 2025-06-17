@@ -3,12 +3,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { performLogout } from '../store/authActions';
 import { Menu, X } from 'lucide-react';
+import { performAdminLogout } from '../store/Adminstate/adminAuthAction';
+
+
 
 const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isLoggedIn = useSelector(state => state.auth.status);
   const user = useSelector(state => state.auth.userData);
+  const currentAdminStatus = useSelector((state) => state.admin.currentAdminStatus);
+  const currentAdminData = useSelector((state) => state.admin.currentAdminData);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -17,7 +22,31 @@ const Header = () => {
     navigate('/');
   };
 
+
+  const handleAdminLogout = () => {
+    dispatch(performAdminLogout());
+    navigate('/')
+  };
   const toggleMenu = () => setIsMenuOpen(prev => !prev);
+
+  // Header According to the current Admin
+  if (currentAdminStatus) {
+    return (
+      <header className="bg-[rgb(85,126,160)] text-white shadow-md py-4 px-6">
+        <p className="text-xl font-semibold">
+          Hi Admin, {currentAdminData?.adminName}
+        </p>
+        <button
+                    onClick={() => {
+                      handleAdminLogout();
+                    }}
+                    className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded w-full"
+                  >
+                    Logout
+                  </button>
+      </header>
+    );
+  }
 
   return (
     <header className="bg-[rgb(85,126,160)] text-white shadow-md relative">

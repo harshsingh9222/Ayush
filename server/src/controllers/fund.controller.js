@@ -84,6 +84,11 @@ const createFundDraft = asyncHandler(async (req, res) => {
             stepsCompleted: 0,
         })
         await fund.save();
+
+        // now here what i am thinking is that i have to write the logic for the Admin means if the fund is created
+        // then add that fund to the admin
+        
+
         return res
             .status(201)
             .json(

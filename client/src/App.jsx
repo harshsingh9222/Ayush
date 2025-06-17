@@ -20,6 +20,9 @@ import CompanyDashboard from "./pages/CompanyDashboard"
 import Fund from "./components/fund/Fund";
 import FundsList from './components/fund/FundsList';
 import ReviewSubmission from './components/fund/Steps/ReviewSubmission';
+import AdminPage from './pages/AdminPage';
+import { getCurrentAdmin } from './hooks/getCurrentAdmin';
+import AdminRoute from './utils/AdminRoute';
 
 function App() {
   const dispatch = useDispatch();
@@ -28,15 +31,20 @@ function App() {
   const [loading, setLoading] = useState(true);
   const representativeStatus = useSelector((state) => state.representative.status);
   const representativeData = useSelector((state) => state.representative.representativeData);
+  const currentAdminStatus = useSelector((state)=> state.admin.currentAdminStatus);
+  const currentAdminData = useSelector((state)=> state.admin.currentAdminData);
+
 
   useEffect(() => {
       getCurrentUser(dispatch)
+      getCurrentAdmin(dispatch)
       fetchCurrentRepresentative(dispatch)
       fetchBusiness(dispatch)
        .finally(() => setLoading(false));
   }, [authStatus,dispatch]);
 
-
+ console.log("Current Admin Status->",currentAdminStatus);
+ console.log("Current Admin data from App.jsx->",currentAdminData);
 
   if (loading) {
     return (
@@ -50,26 +58,42 @@ function App() {
   }
 
   return (
+    
     <div className="min-h-screen">
       <Header />
       <main>
-        <Routes>
-          <Route path="/" element={<Navigate to="/home" />} />
-          <Route path="/step" element={<Home />} />
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/vision" element={<VisionPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/*" element={<PageNotFound />} />
-          <Route path="/work" element={<WorkPage/>} />
-          <Route path="/profile" element={<ProfilePage/>} />
-          <Route path="/dashboard" element={<CompanyDashboard/>} />
-          <Route path="/dashboard/funds" element={<FundsList/>} />
-          <Route path="/fund/:fundId/step/:stepNumber" element={<Fund/>} />
-          <Route path="/fund/:fundId/view" element={<ReviewSubmission readOnly={true} />}/>
-          <Route path="/fund" element={<Navigate to="/dashboard/funds"/>} />
-        </Routes>
+      <Routes>
+ 
+  {currentAdminStatus ? (
+    <>
+      <Route path="/admin" element={<AdminPage />} />
+      <Route path="/*" element={<Navigate to="/admin" replace />} />
+    </>
+  ) : (
+    
+    <>
+      <Route path="/" element={<Navigate to="/home" />} />
+      <Route path="/home" element={<HomePage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/vision" element={<VisionPage />} />
+      <Route path="/contact" element={<ContactPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/step" element={<Home />} />
+      <Route path="/work" element={<WorkPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/dashboard" element={<CompanyDashboard />} />
+      <Route path="/dashboard/funds" element={<FundsList />} />
+      <Route path="/fund/:fundId/step/:stepNumber" element={<Fund />} />
+      <Route path="/fund/:fundId/view" element={<ReviewSubmission readOnly={true} />} />
+      <Route path="/fund" element={<Navigate to="/dashboard/funds" />} />
+
+     
+      <Route path="/admin" element={<Navigate to="/login" replace />} />
+      <Route path="/*" element={<PageNotFound />} />
+    </>
+  )}
+</Routes>
+
       </main>
     </div>
   );

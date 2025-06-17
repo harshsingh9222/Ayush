@@ -1,0 +1,29 @@
+import axiosInstance from '../../utils/axios.helper';
+import { logoutAdmin } from './adminSlice';
+
+export const performAdminLogout = () => async (dispatch) => {
+  try {
+    const res = await axiosInstance.post('/admin/logout', {}, { withCredentials: true });
+    if (res.status === 200) {
+      console.log('Admin Logout successful:', res.data);
+
+          window.location.reload();
+    } else {
+      console.error('Admin Logout failed:', res.data);
+    }
+
+  } catch (err) {
+
+    console.error('Admin Error during logout:', err.response?.data || err.message);
+    // console.log('err :>> ', err);
+    if (err.response && err.response.status === 401) {
+      console.error('Unauthorized access, Admin might already be logged out.');
+    } else {
+      console.error('Admin Logout error:', err);
+    }
+  } finally {
+    
+    delete axiosInstance.defaults.headers.common['Authorization'];
+    dispatch(logoutAdmin());
+  }
+};
