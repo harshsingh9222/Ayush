@@ -12,26 +12,26 @@ const adminSchema = new mongoose.Schema({
         type:String,
         required:true,
     },
-    pendingBusiness:{
+    pendingBusinesses:[{
         type: mongoose.Schema.Types.ObjectId,
         ref:'Business'
-    },
-    verifyBusiness:{
+    }],
+    verifiedBusiness:[{
         type: mongoose.Schema.Types.ObjectId,
         ref:'Business'
-    },
-    pendingFund:{
+    }],
+    pendingFunds:[{
         type: mongoose.Schema.Types.ObjectId,
         ref:'Fund'
-    },
-    verifiedFund:{
+    }],
+    verifiedFunds:[{
         type: mongoose.Schema.Types.ObjectId,
         ref:'Fund'
-    },
-    grantedFund:{
+    }],
+    grantedFunds:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Fund'
-    },
+    }],
     adminType:{
         type:String,
         enum:['viewer','BusinessVerifier','FundVerifier','FundGranter'],

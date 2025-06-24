@@ -40,28 +40,50 @@ function CompanyDashboard() {
         "Rejected": "❌"
     };
 
+    const getVerificationStatusColorRep = (arr) => {
+        if (!arr || arr.length !== 3) return "bg-gray-300";
+        if (arr.every(v => v === 1)) return "bg-green-500";
+        if (arr.every(v => v === 2)) return "bg-yellow-400";
+        if (arr.some(v => v === 0)) return "bg-red-500";
+        return "bg-gray-300";
+    };
+
+    const getVerificationStatusColorBusiness = (arr) => {
+        if (!arr || arr.length !== 8) return "bg-gray-300";
+        if (arr.every(v => v === 1)) return "bg-green-500";
+        if (arr.every(v => v === 2)) return "bg-yellow-400";
+        if (arr.some(v => v === 0)) return "bg-red-500";
+        return "bg-gray-300";
+    };
+
     return (
         <div className="min-h-screen bg-gray-100 p-6">
             {/* Progress Bar */}
             <div className="bg-white p-6 rounded-xl shadow-md mb-10">
                 <div className="flex justify-between items-center">
-                    {steps.map((step, index) => (
-                        <div className="flex flex-col items-center w-1/5 relative" key={index}>
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center 
-                                ${index < stepsCompleted ? "bg-teal-500" : "bg-gray-300"}`}>
-                                <CheckCircle className="text-white" size={20} />
-                            </div>
-                            <p className={`text-xs mt-2 text-center font-medium 
-                                ${index < stepsCompleted ? "text-teal-600" : "text-gray-500"}`}>
-                                {step.toUpperCase()}
-                            </p>
-                            {index < steps.length - 1 && (
-                                <div className={`absolute top-5 left-full h-1 w-full 
-                                    ${index < stepsCompleted - 1 ? "bg-teal-500" : "bg-gray-300"}`}>
+                    {steps.map((step, index) => {
+                        let customColor = index < stepsCompleted ? "bg-teal-500" : "bg-gray-300";
+                        if (step === "Personal Documents") {
+                            customColor = getVerificationStatusColorRep(representativeData?.statusDocs
+                            );
+                        } else if (step === "Business Documents") {
+                            customColor = getVerificationStatusColorBusiness(businessData?.statusDocs
+                            );
+                        }
+                        return (
+                            <div className="flex flex-col items-center w-1/5 relative" key={index}>
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${customColor}`}>
+                                    <CheckCircle className="text-white" size={20} />
                                 </div>
-                            )}
-                        </div>
-                    ))}
+                                <p className={`text-xs mt-2 text-center font-medium ${index < stepsCompleted ? "text-teal-600" : "text-gray-500"}`}>
+                                    {step.toUpperCase()}
+                                </p>
+                                {index < steps.length - 1 && (
+                                    <div className={`absolute top-5 left-full h-1 w-full ${index < stepsCompleted - 1 ? "bg-teal-500" : "bg-gray-300"}`}></div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -76,6 +98,12 @@ function CompanyDashboard() {
                     <div><span className="font-semibold">State:</span> {representativeData?.state || 'N/A'}</div>
                     <div><span className="font-semibold">Address:</span> {representativeData?.addressLine1 || 'N/A'}</div>
                 </div>
+
+                {representativeData?.query && (
+                    <div className="mt-6 p-4 border-l-4 border-red-600 bg-red-100 text-red-700">
+                        <strong>Representative Query:</strong> {representativeData.query}
+                    </div>
+                )}
 
                 <div className="mt-8">
                     <h3 className="text-lg font-semibold text-indigo-500 mb-2">Step Completion Status</h3>
@@ -94,10 +122,6 @@ function CompanyDashboard() {
                 {!businessStatus ? (
                     <div className="bg-white p-6 rounded-lg shadow-md text-center">
                         <p className="mb-4 text-gray-700 text-lg font-medium">You haven’t submitted your business details yet.</p>
-
-                        {/* here i am used button as the we had discussed the concept of the Business reprenstative and
-                        Employee till now it is available for every one as the Employee is added if will open it only for the Representative...  */}
-
                         <button
                             onClick={() => navigate("/step")}
                             className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
@@ -111,7 +135,7 @@ function CompanyDashboard() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 text-sm">
                             <div><span className="font-semibold">Business Name:</span> {businessData?.businessName || 'N/A'}</div>
                             <div>
-                                <span className="font-semibold">Status:</span> 
+                                <span className="font-semibold">Status:</span>
                                 <span className={`ml-2 font-bold ${statusColor[businessData?.status]}`}>
                                     {statusSymbol[businessData?.status]} {businessData?.status}
                                 </span>
@@ -134,21 +158,22 @@ function CompanyDashboard() {
                                 ) : 'N/A'}
                             </div>
                         </div>
+
+                        {businessData?.query && (
+                            <div className="mt-6 p-4 border-l-4 border-red-600 bg-red-100 text-red-700">
+                                <strong>Business Query:</strong> {businessData.query}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
 
-            {/** here comes the logic of the loan apply for the loan for the  
-            */}
             <button
                 onClick={() => navigate("/dashboard/funds")}
                 className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition mt-6 block mx-auto"
             >
                 Manage Funds/Grant
             </button>
-
-            {/* here i will write the logic of the if any campegin is currently running or not or completed 
-            and some details about the campegin */}
         </div>
     );
 }

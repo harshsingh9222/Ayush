@@ -10,9 +10,9 @@ export const generateAccessAndRefreshToken = async (userId) => {
             throw new ApiError(404, "User not found");
         }
         // Generate access token
-        const accessToken = user.generateAccessTokenAdmin();
+        const accessToken = user.generateAccessToken();
         // Generate refresh token
-        const refreshToken = user.generateRefreshTokenAdmin();
+        const refreshToken = user.generateRefreshToken();
         // Save refresh token in user document
         user.refreshToken = refreshToken;
         await user.save({ validateBeforeSave: false });

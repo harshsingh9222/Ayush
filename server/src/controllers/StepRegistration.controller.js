@@ -1,6 +1,7 @@
 import Representative from '../models/Representative.model.js';
 import Business from '../models/Business.model.js';
 import OTP from '../models/OTP.model.js';
+import Admin from "../models/Admin.modal.js";
 
 const getFileByFieldName = (files = [], fieldName) => {
     const fileObj = files.find(f => f.fieldname === fieldName);
@@ -339,10 +340,20 @@ export const stepRegistration = async (req, res) => {
                     });
             }
 
+            const business = await Business.findOne({ registrationNumber: CRNNumber });
+
+
+            // Update the admin's pendingBusinesses
+            const updatedAdmin = await Admin.findOneAndUpdate(
+                { adminName: 'BusinessVerifier' },
+                { $addToSet: { pendingBusinesses: business._id } }, // prevents duplicates
+                { new: true }
+            );
+            console.log("Admin in step4->",updatedAdmin);
+            
             representative.stepsCompleted = Math.max(representative.stepsCompleted, 5); // Update step count
             await representative.save();
 
-            const business = await Business.findOne({ registrationNumber: CRNNumber });
             return res
                 .status(200)
                 .json({

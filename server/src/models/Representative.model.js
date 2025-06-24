@@ -120,9 +120,30 @@ const representativeSchema = new mongoose.Schema({
     stepsCompleted: {
         type: Number,
         default: 0
-    }
+    },
+
+    // may be i have to reove this in future
+
+    statusDocs: {
+        type: [Number],
+        default: [2, 2, 2],
+        validate: {
+            validator: function (v) {
+                return Array.isArray(v) && v.length === 3;
+            },
+            message: props => `statusDocs must be an array of exactly 3 numbers.`
+        }
+    },
+    query:[{
+        type:String
+    }],
+    
 }, { timestamps: true });
 
 const Representative = mongoose.model('Representative', representativeSchema);
 
-export default Representative;      
+export default Representative; 
+
+// const ADDRESS_PROOF_INDEX = 0;
+// const AADHAR_PIC_INDEX = 1;
+// const PAN_PIC_INDEX = 2;

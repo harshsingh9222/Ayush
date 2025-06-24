@@ -23,6 +23,7 @@ import ReviewSubmission from './components/fund/Steps/ReviewSubmission';
 import AdminPage from './pages/AdminPage';
 import { getCurrentAdmin } from './hooks/getCurrentAdmin';
 import AdminRoute from './utils/AdminRoute';
+import BusinessDetailsPage from './components/admin_component/BusinessDetailsPage';
 
 function App() {
   const dispatch = useDispatch();
@@ -68,6 +69,7 @@ function App() {
     <>
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/*" element={<Navigate to="/admin" replace />} />
+      <Route path="/admin/business/:businessId" element={<BusinessDetailsPage />} />
     </>
   ) : (
     

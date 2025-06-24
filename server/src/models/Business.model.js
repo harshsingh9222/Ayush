@@ -109,6 +109,7 @@ const businessSchema = new mongoose.Schema({
     trim: true
   },
 
+
   // Documents Upload Fields 
   businessProof: {
     type: String, 
@@ -143,7 +144,20 @@ const businessSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Representative',
     required: true
-  }
+  },
+  statusDocs: {
+    type: [Number],
+    default: [2, 2, 2, 2, 2, 2, 2, 2],
+    validate: {
+        validator: function (v) {
+            return Array.isArray(v) && v.length === 8;
+        },
+        message: props => `statusDocs must be an array of exactly 8 numbers.`
+    }
+},
+query:[{
+    type:String
+}],
 }, { timestamps: true });
 
 export default mongoose.model('Business', businessSchema);
