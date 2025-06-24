@@ -137,6 +137,14 @@ const representativeSchema = new mongoose.Schema({
     query:[{
         type:String
     }],
+    timeline: {
+        type: Date,
+        default: null 
+      },
+      countRejection:{
+        type: Number,
+        default: 0
+      },
     
 }, { timestamps: true });
 

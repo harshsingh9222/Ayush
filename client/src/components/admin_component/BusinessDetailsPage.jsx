@@ -6,33 +6,35 @@ import { getCurrentAdmin } from '../../hooks/getCurrentAdmin';
 
 function BusinessDetailsPage() {
   const { businessId } = useParams();
-const [business, setBusiness] = useState(null);
-const [representativeId, setRepresentativeId] = useState(null);
-const dispatch = useDispatch();
+  const [business, setBusiness] = useState(null);
+  const [representativeId, setRepresentativeId] = useState(null);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectionIndex, setRejectionIndex] = useState(null);
+  const [rejectionType, setRejectionType] = useState('');
+  const [query, setQuery] = useState('');
+  const [timeline, setTimeline] = useState('');
 
-const pendingBusinesses = useSelector(
-  (state) => state.admin.currentAdminData.pendingBusinesses || []
-);
+  const dispatch = useDispatch();
+  const pendingBusinesses = useSelector(
+    (state) => state.admin.currentAdminData.pendingBusinesses || []
+  );
 
-
-// here i am writing the logic to get the current representative of the business
-useEffect(() => {
-  if (pendingBusinesses.length > 0) {
-    const found = pendingBusinesses.find(
-      (b) => String(b._id) === String(businessId)
-    );
-    if (found) {
-      setBusiness(found);
-      if (found.representative?._id) {
-        setRepresentativeId(found.representative._id);
+  useEffect(() => {
+    if (pendingBusinesses.length > 0) {
+      const found = pendingBusinesses.find(
+        (b) => String(b._id) === String(businessId)
+      );
+      if (found) {
+        setBusiness(found);
+        if (found.representative?._id) {
+          setRepresentativeId(found.representative._id);
+        }
+      } else {
+        setBusiness(null);
+        setRepresentativeId(null);
       }
-    } else {
-      setBusiness(null);
-      setRepresentativeId(null);
     }
-  }
-}, [pendingBusinesses, businessId]);
-
+  }, [pendingBusinesses, businessId]);
 
   const repDocFields = ['addressProofPic', 'aadharPic', 'panPic'];
   const businessDocFields = [
@@ -46,53 +48,70 @@ useEffect(() => {
     'partnershipDeed'
   ];
 
-  useEffect(() => {
-    if (pendingBusinesses.length > 0) {
-      const found = pendingBusinesses.find(
-        (b) => String(b._id) === String(businessId)
-      );
-      if (found) {
-        setBusiness(found);
-      } else {
-        setBusiness(null);
-      }
-    }
-  }, [pendingBusinesses, businessId, dispatch]);
-
   const handleApproval = (index, status) => {
+    if (status === 'reject') {
+      setRejectionIndex(index);
+      setRejectionType('business');
+      setShowRejectModal(true);
+      return;
+    }
     axiosInstance
-      .post(`/admin/business/${businessId}/verify`, {
-        index,
-        status,
-      })
+      .post(`/admin/business/${businessId}/verify`, { index, status })
       .then(() => {
         alert(`Document ${index} ${status}`);
         window.location.reload();
         dispatch(getCurrentAdmin());
-        
       })
-      .catch((err) => {
-        console.error('Verification error', err);
-      });
+      .catch((err) => console.error('Verification error', err));
   };
 
-  // here i am writing the logic to update the representative
-
   const handleApprovalRepresentative = (index, status) => {
+    if (status === 'reject') {
+      setRejectionIndex(index);
+      setRejectionType('representative');
+      setShowRejectModal(true);
+      return;
+    }
     axiosInstance
-      .post(`/admin/representative/${representativeId}/verify`, {
-        index,
-        status,
-      })
+      .post(`/admin/representative/${representativeId}/verify`, { index, status })
       .then(() => {
         alert(`Document ${index} ${status}`);
         window.location.reload();
         dispatch(getCurrentAdmin());
-        
       })
-      .catch((err) => {
-        console.error('Verification error', err);
-      });
+      .catch((err) => console.error('Verification error', err));
+  };
+
+  const submitRejection = () => {
+    if (!query || !timeline) {
+      alert("Please enter both rejection reason and timeline.");
+      return;
+    }
+
+    const payload = {
+      index: rejectionIndex,
+      status: 'reject',
+      query,
+      timeline,
+    };
+
+    const url =
+      rejectionType === 'representative'
+        ? `/admin/representative/${representativeId}/verify`
+        : `/admin/business/${businessId}/verify`;
+
+    axiosInstance
+      .post(url, payload)
+      .then(() => {
+        alert(`Rejected with reason and timeline submitted.`);
+        setShowRejectModal(false);
+        setQuery('');
+        setTimeline('');
+        setRejectionIndex(null);
+        window.location.reload();
+        dispatch(getCurrentAdmin());
+      })
+      .catch((err) => console.error('Rejection submission error', err));
   };
 
   if (business === null) {
@@ -168,24 +187,7 @@ useEffect(() => {
       {/* Business Details Section */}
       <div className="bg-white p-4 rounded shadow">
         <h2 className="text-2xl font-bold mb-4">Business Details</h2>
-        <p><strong>Name:</strong> {business.businessName || 'N/A'}</p>
-        <p><strong>Email:</strong> {business.email || 'N/A'}</p>
-        <p><strong>Mobile No:</strong> {business.mobileNo || 'N/A'}</p>
-        <p><strong>Registration Number:</strong> {business.registrationNumber || 'N/A'}</p>
-        <p><strong>Sectors:</strong> {business.sectors?.join(', ') || 'N/A'}</p>
-        <p><strong>Address:</strong> {business.addressLine1 || ''}{business.addressLine2 ? `, ${business.addressLine2}` : ''}</p>
-        <p><strong>Village/Town:</strong> {business.villageTown || 'N/A'}</p>
-        <p><strong>Tehsil:</strong> {business.tehsil || 'N/A'}</p>
-        <p><strong>Post:</strong> {business.post || 'N/A'}</p>
-        <p><strong>District:</strong> {business.district || 'N/A'}</p>
-        <p><strong>State:</strong> {business.state || 'N/A'}</p>
-        <p><strong>Postal Code:</strong> {business.postalCode || 'N/A'}</p>
-        <p><strong>Objectives:</strong> {business.objectivesOfbusiness || 'N/A'}</p>
-        <p><strong>Account Holder Name:</strong> {business.accountHolderName || 'N/A'}</p>
-        <p><strong>Bank Name:</strong> {business.bankName || 'N/A'}</p>
-        <p><strong>IFSC Code:</strong> {business.ifscCode || 'N/A'}</p>
-        <p><strong>Account Number:</strong> {business.bankAccountNumber || 'N/A'}</p>
-
+        {/* Business Info Rendered Here */}
         <div className="mt-4">
           <h3 className="text-xl font-semibold mb-2">Business Documents</h3>
           {businessDocFields.map((docField, index) => (
@@ -233,6 +235,44 @@ useEffect(() => {
           ))}
         </div>
       </div>
+
+      {/* Rejection Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Reject Document</h2>
+            <label className="block mb-2 font-semibold">Reason for Rejection:</label>
+            <textarea
+              className="w-full border p-2 rounded mb-4"
+              rows={4}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Enter the reason for rejection"
+            />
+            <label className="block mb-2 font-semibold">Timeline (Deadline Date):</label>
+            <input
+              type="date"
+              className="w-full border p-2 rounded mb-4"
+              value={timeline}
+              onChange={(e) => setTimeline(e.target.value)}
+            />
+            <div className="flex justify-end">
+              <button
+                className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-1 rounded mr-2"
+                onClick={() => setShowRejectModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded"
+                onClick={submitRejection}
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

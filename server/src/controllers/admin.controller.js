@@ -156,7 +156,7 @@ const getPendingBusinesses = asyncHandler(async (req, res) => {
     if (!business) {
       return res.status(404).json({ message: "Business not found" });
     }
-  
+    
     // Ensure the index is valid
     if (index < 0 || index >= business.statusDocs.length) {
       return res.status(400).json({ message: "Invalid document index" });
@@ -166,11 +166,32 @@ const getPendingBusinesses = asyncHandler(async (req, res) => {
       business.statusDocs[index] = 1;
     } else if (status === "reject") {
       business.statusDocs[index] = 0;
-    } else {
+    
+      const query = req.body.query;
+      const timeline = new Date(req.body.timeline);
+    
+      // Initialize queries array if it doesn't exist
+      if (!business.query) {
+        business.query = [];
+      }
+    
+      // Append the new query to the list of queries
+      business.query.push(query);
+    
+      // Handle timeline logic
+      if (!business.timeline) {
+        business.timeline = timeline;
+      } else {
+        const currentTimeline = new Date(business.timeline);
+        business.timeline = new Date(Math.min(currentTimeline.getTime(), timeline.getTime()));
+      }
+      business.countRejection++;
+    }
+     else {
       return res.status(400).json({ message: "Invalid status" });
     }
-  
-    // Save the updated business document
+    
+
     await business.save();
   
     // Return the updated business
@@ -198,7 +219,28 @@ const getPendingBusinesses = asyncHandler(async (req, res) => {
       representative.statusDocs[index] = 1;
     } else if (status === "reject") {
       representative.statusDocs[index] = 0;
-    } else {
+    
+      const query = req.body.query;
+      const timeline = new Date(req.body.timeline);
+    
+      // Initialize the queries array if it's undefined
+      if (!representative.query) {
+        representative.query = [];
+      }
+    
+      // Append the rejection reason to the queries array
+      representative.query.push(query);
+    
+      // Handle the timeline logic
+      if (!representative.timeline) {
+        representative.timeline = timeline;
+      } else {
+        const currentTimeline = new Date(representative.timeline);
+        representative.timeline = new Date(Math.min(currentTimeline.getTime(), timeline.getTime()));
+      }
+      representative.countRejection++;
+    }
+     else {
       return res.status(400).json({ message: "Invalid status value" });
     }
   
