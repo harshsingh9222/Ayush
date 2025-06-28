@@ -48,8 +48,9 @@ const googleLogin = useGoogleLogin({
     <div className="App">
       <button
         onClick={googleLogin}
-        className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition duration-200"
+        className="flex items-center justify-center gap-2 w-full border-1 border-gray-300 hover:border-green-600 py-2 rounded hover:shadow-lg transition-shadow duration-200"
       >
+        <img width="24" height="24" src="https://img.icons8.com/fluency/48/google-logo.png" alt="google-logo"/>
         Continue with Google
       </button>
     </div>
