@@ -46,7 +46,7 @@ export default function WorkPage() {
         <span>Filter</span>
       </button>
 
-      <h1 className="text-3xl font-bold text-center mb-8 text-indigo-700">
+      <h1 className="text-3xl font-bold text-center mb-8 text-green-500">
         AYUSH Companies
       </h1>
 
@@ -59,7 +59,7 @@ export default function WorkPage() {
             <input
               type="text"
               placeholder="e.g., Delhi|Lucknow"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               value={locationInput}
               onChange={(e) => setLocationInput(e.target.value)}
             />
@@ -75,8 +75,8 @@ export default function WorkPage() {
                   onClick={() => toggleCategory(category)}
                   className={`px-3 py-1 text-sm rounded-full border transition ${
                     selectedCategories.includes(category)
-                      ? 'bg-indigo-500 text-white border-indigo-500'
-                      : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-indigo-100'
+                      ? 'bg-green-500 text-white border-green-500'
+                      : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-green-100'
                   }`}
                 >
                   {category}
